@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/promlabs/promlens/pkg/grafana"
-	"github.com/promlabs/promlens/pkg/sharer"
+	"github.com/prometheus/promlens/pkg/grafana"
+	"github.com/prometheus/promlens/pkg/sharer"
 )
 
 type pageConfig struct {

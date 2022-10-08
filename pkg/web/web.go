@@ -7,11 +7,11 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/promlabs/promlens/pkg/grafana"
-	"github.com/promlabs/promlens/pkg/page_config"
-	"github.com/promlabs/promlens/pkg/parser"
-	"github.com/promlabs/promlens/pkg/react"
-	"github.com/promlabs/promlens/pkg/sharer"
+	"github.com/prometheus/promlens/pkg/grafana"
+	"github.com/prometheus/promlens/pkg/page_config"
+	"github.com/prometheus/promlens/pkg/parser"
+	"github.com/prometheus/promlens/pkg/react"
+	"github.com/prometheus/promlens/pkg/sharer"
 )
 
 // Config configures the PromLens web UI and API.
