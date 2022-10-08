@@ -1,0 +1,841 @@
+:root {
+  --border-color: rgba(52, 79, 113, 0.2);
+  --ast-connector-color: #d6dce3;
+}
+
+body {
+  font-family: 'Open Sans', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+  padding-bottom: 15px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #e65013ff;
+}
+
+code {
+  color: #e65013ff;
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-color);
+}
+
+.navbar {
+   /* Go back to Bootstrap's default for the Navbar */
+  /* line-height: 1.5; */
+  border-bottom: 1px solid var(--border-color);
+  background-color: #fff;
+}
+
+.navbar-nav .nav-link {
+  margin: 0 10px;
+}
+
+.nav-tabs .nav-link {
+  cursor: pointer;
+  color: #495057;
+}
+
+.promlens-container {
+  margin-top: 15px;
+}
+
+.server-settings .btn {
+  vertical-align: top;
+}
+
+.promlens-settings {
+  margin-top: 15px;
+}
+
+.top-alerts .alert {
+  margin: 15px 0 0 0;
+}
+
+.tab-content {
+  background: white;
+  border-left: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  padding: 15px;
+}
+
+.query-top-bar {
+  display: flex;
+  align-items: flex-start;
+}
+
+.query-top-bar-btn {
+  margin-left: 5px;
+  height: 37px;
+  width: 37px;
+  font-size: 1rem;
+}
+
+.expression-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.expression-input {
+  display: flex;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  /* Important for absolute positioning of placeholder text. */
+  position: relative;
+}
+
+.expression-input-sync-btn {
+  margin: 2px -5px 2px 2px;
+}
+
+.cm-expression-input {
+  margin: 4px 12px;
+  padding: 0;
+  font-weight: normal;
+  font-size: 14px;
+  font-feature-settings: "liga" 0, "calt" 0;
+  line-height: 19px;
+  letter-spacing: 0px;
+  flex: 1;
+}
+
+.expression-input-enter {
+  width: 25px;
+  display: flex;
+  align-items: center;
+}
+
+@font-face {
+  font-family: 'codicon';
+  src: local('codicon'), url(./fonts/codicon.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'DejaVu Sans Mono';
+  src: local('DejaVu Sans Mono'), url('./fonts/DejaVuSansMono-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.expression-input-stale {
+  border: 1px dotted var(--border-color);
+}
+
+.expression-input-placeholder {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgb(146, 146, 146);
+  pointer-events: none;
+}
+
+.expression-input-stale .expression-input-placeholder {
+  left: calc(16px + 30px);
+}
+
+.metrics-explorer {
+  margin-top: 15px;
+  padding: 15px;
+  outline: 1px solid var(--border-color);
+}
+
+.metric-name-filter, .metric-name-input {
+  border: 1px solid var(--border-color);
+  padding: 15px 15px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.metrics-explorer .data-table td.metadata-type {
+  font-style: italic;
+  color: rgb(0, 128, 128);
+}
+
+.metrics-explorer .data-table td.metadata-help {
+  color: rgb(128, 0, 0);
+}
+
+.metrics-explorer .data-table td.metadata-type, .metrics-explorer .data-table td.metadata-help {
+  font-family: 'Open Sans', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+}
+
+.series-explorer-label-value {
+  cursor: pointer;
+}
+
+.series-explorer-label-value:hover {
+  background-color: #eee;
+}
+
+.parse-error {
+  white-space: normal;
+  margin: 5px 0 0 0;
+  padding: 5px 17px;
+  font-size: 12px;
+  font-family: 'Open Sans', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+}
+
+.ast-visualizer {
+  margin: 15px;
+  padding: 15px;
+  outline: 1px solid var(--border-color);
+  outline-offset: -1px;
+  overflow-x: auto;
+}
+
+.ast-node {
+  width: fit-content;
+  margin: 0 5px 0 25px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* The root AST node needs to be less indented than the others. */
+.ast-node.ast-node-root {
+  margin-top: 15px;
+  margin-left: 21px;
+}
+
+.ast-connector {
+  position: absolute;
+  display: inline-block;
+  border-left: 2px solid var(--ast-connector-color);
+  width: 17px;
+  left: -14px;
+}
+
+.ast-connector-down {
+  border-top: 2px solid var(--ast-connector-color);
+  border-top-left-radius: 3px;
+  top: calc(50% - 1px);
+  /* bottom: 0; */
+}
+
+.ast-connector-up {
+  border-bottom: 2px solid var(--ast-connector-color);
+  border-bottom-left-radius: 3px;
+  bottom: calc(50% - 1px);
+}
+
+.ast-connector-plus {
+  position: absolute;
+  left: -19.5px;
+  font-size: 0.8em;
+  z-index: 9999;
+  color: transparent;
+  cursor: pointer;
+}
+
+.ast-connector-plus-down {
+  top: calc(50% - 6.5px);
+}
+
+.ast-connector-plus-up {
+  bottom: calc(50% - 6.5px);
+}
+
+.ast-node-inner-wrapper:hover > .ast-connector-plus {
+  display: block;
+  color: grey;
+  outline: 2px solid lightgrey;
+  background-color: white;
+  padding: 2px;
+}
+
+.ast-node-inner-wrapper > .ast-connector-plus:hover {
+  background-color: grey;
+  color: white;
+}
+
+.ast-node-inner-wrapper {
+  position: relative; /* Required so that absolutely positioned tree lines treat this element as their containing block. */
+}
+
+.ast-node-inner {
+  background: #edf3ff;
+  border: 1px solid transparent;
+  /* border: 1px solid #edf3ff; */
+  /* border-radius: 2px; */
+
+   /* Required to make margins work (https://stackoverflow.com/questions/17991174/css-what-to-look-for-when-margin-has-no-effect) */
+  display: inline-block;
+
+  margin: 3px 5px 3px 3px;
+  box-shadow: 0 6px 8px rgba(102,119,136,.03), 0 1px 2px rgba(102,119,136,.3);
+}
+
+.ast-node-inner:hover {
+  background-color: #fcfcfc;
+}
+
+.ast-node-inner-top {
+  display: flex;
+  flex-direction: row;
+}
+
+.ast-node-inner-text {
+  padding: 3px 10px;
+  display: inline-block;
+  flex-basis: 100%;
+}
+
+.ast-node-inner-editor-view .ast-node-inner-text {
+  opacity: 0.5;
+}
+
+.ast-node-inner-action-btn {
+  display: none;
+  border: none;
+  /* border: 1px solid transparent; */
+  border-radius: 0;
+  /* color: #aaa; */
+  flex-basis: auto;
+  padding: 0 8px;
+  font-size: 12px;
+  height: 26.6px;
+  /* border-left: 1px dotted var(--border-color); */
+}
+
+.ast-node-inner-action-btn svg {
+  margin-bottom: 2px;
+}
+
+.ast-node-inner:hover .ast-node-inner-action-btn, .ast-node-inner-placeholder .ast-node-inner-action-btn {
+  display: block;
+}
+
+.ast-node-inner-action-btn:hover {
+  /* border: 1px solid var(--border-color); */
+  border: none;
+  /* border-left: 1px dotted var(--border-color); */
+  /* border: 1px solid transparent; */
+  color: white;
+  /* background-color: white; */
+}
+
+.ast-node-inner-editor-view {
+  padding: 3px 1px;
+}
+
+.ast-node-inner-text {
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.ast-node-inner-text:hover {
+  text-decoration: underline;
+
+  /* When highlighting the text part, we want to grow the highlight to cover the borders of the outer box. */
+  /* margin: -1px;
+  padding: 4px 9px; */
+}
+
+.ast-node-inner.ast-node-inner-query-error {
+  border-color: #a31515 !important;
+  box-shadow: 1px 1px 2px rgba(255, 122, 122, .5);
+}
+
+.ast-node-inner.ast-node-inner-placeholder {
+  border: 1px dashed var(--border-color);
+  background-color: white;
+}
+
+.ast-node-inner.ast-node-inner-placeholder > .ast-node-inner-text {
+  padding-left: 16px;
+  padding-right: 16px;
+  color: rgb(146, 146, 146);
+}
+
+.ast-node-infos {
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: top;
+  margin-top: 4px;
+}
+
+.ast-node-infos div:first-child {
+  margin-left: 10px;
+}
+
+.ast-node-infos div:last-child {
+  margin-right: 10px; /* For when the node is selected */
+}
+
+.ast-node-warnings {
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+.ast-node-label-stats {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.ast-node-label-stats:hover {
+  background-color: #eee;
+}
+
+.tooltip code {
+  color: rgb(255, 186, 159);
+}
+
+#label-tooltip .tooltip-inner {
+  padding: 10px;
+  max-width: unset;
+}
+
+#label-tooltip .tooltip-inner p {
+  margin-bottom: 8px;
+}
+
+#label-tooltip .tooltip-inner ul {
+  list-style: square;
+  text-align: left;
+  margin-right: 20px;
+  margin-bottom: 5px;
+}
+
+.ast-node-actions .btn {
+  color: #5c83b1;
+  font-family: "DejaVu Sans Mono", monospace;
+  font-weight: 400;
+  font-size: 0.7em;
+  padding: 0 .75rem;
+  vertical-align: baseline;
+}
+
+.ast-node-actions code {
+  color: unset;
+  font-size: unset;
+}
+
+.ast-node-selected > * > .ast-node-inner {
+  /* background: rgb(226, 226, 197); */
+  border: 1px solid rgb(148, 176, 207);
+  background-color: white;
+  /* border: 1px solid grey; */
+  box-shadow: 1px 1px 2px rgba(102,119,136,.5);
+}
+
+.ast-node-selected > * > .ast-node-inner.ast-node-inner-placeholder {
+  border: 1px dashed rgb(148, 176, 207);
+}
+
+.ast-node-selected {
+  /* background-color: rgb(250, 250, 214); */
+  background-color: #f8fbff;
+  border: 1px solid rgb(241, 241, 241);
+  /* border: 1px solid rgb(223, 223, 192); */
+  box-shadow: 0 6px 8px rgba(102,119,136,.03), 0 1px 2px rgba(102,119,136,.3);
+}
+
+.ast-node-stats {
+  font-family: "DejaVu Sans Mono", monospace;
+  font-weight: 400;
+  font-size: 0.7em;
+  color: rgb(146, 146, 146);
+  margin: 0 5px;
+}
+
+.ast-node-query-error-message {
+  font-size: 0.8em;
+  color: #a31515;
+}
+
+.ast-node-child-query-error-message {
+  font-size: 0.8em;
+  color: #a57723
+}
+
+.ast-query-icon {
+  margin-right: 5px;
+  font-size: 0.9em;
+}
+
+.icon-spin {
+  -webkit-animation: icon-spin 2s infinite linear;
+          animation: icon-spin 2s infinite linear;
+}
+
+@-webkit-keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+@keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+.promql-code {
+  font-family: "DejaVu Sans Mono", monospace;
+}
+
+.promql-keyword {
+  color: #008080;
+}
+
+.promql-metric-name {
+  color: #000;
+}
+
+.promql-label-name {
+  color: #800000;
+}
+
+.promql-string {
+  color: #a31515;
+}
+
+.promql-paren, .promql-brace {
+}
+
+.promql-ellipsis {
+  color: rgb(170, 170, 170);
+}
+
+.promql-duration {
+  color: #09885a;
+}
+
+.promql-number {
+  color: #09885a;
+}
+
+.node-visualizer-wrapper {
+  margin-bottom: 20px;
+}
+
+#node-visualizer-tabs-tabpane-explain {
+  /* Without this, binop explain tables overflow. */
+  overflow-x: auto;
+}
+
+.graph-controls,
+.table-controls {
+  margin-bottom: 15px;
+}
+
+.graph-controls input,
+.table-controls input {
+  text-align: center;
+}
+
+.graph-controls .range-input input {
+  width: 50px;
+}
+
+.time-input input {
+  border-right: none;
+}
+
+.time-input {
+  width: 270px !important;
+}
+
+.graph-controls input.resolution-input {
+  width: 90px;
+}
+
+.graph-controls > :not(:first-child) {
+  margin-left: 20px;
+}
+
+.graph-controls .clear-time-btn,
+.table-controls .clear-time-btn {
+  background: #fff;
+  border-left: none;
+  border-top: 1px solid #ced4da;
+  border-bottom: 1px solid #ced4da;
+  color: #495057;
+}
+
+.data-table.table {
+  margin: 5px 0 0 0;
+  border: none;
+}
+
+.vector-vector-table > tbody:hover {
+  background-color: #eee;
+}
+
+.data-table thead th {
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #ccc;
+  background-color: #f8fbff;
+  color: #333;
+  font-size: 0.8em;
+  padding: 6px 18px;
+}
+
+.data-table > tbody > tr > td {
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  padding: 5px 18px;
+  font-size: 0.8em;
+  vertical-align: middle;
+  white-space: pre-wrap;
+
+  font-family: "DejaVu Sans Mono", monospace;
+}
+
+.data-table > tbody > tr > td.nocode {
+  font-family: 'Open Sans', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+}
+
+.data-table.table-nobreak > tbody > tr > td {
+  white-space: pre;
+}
+
+.data-table > tbody > tr > td.number-cell {
+  text-align: right;
+}
+
+.data-table > tbody > tr > td.op-cell {
+  font-weight: bold;
+  text-align: center;
+  background-color: #f8fbff;
+}
+
+.data-table > tbody > tr:first-child > td {
+  border-top: none;
+}
+
+/* .data-table > tbody > tr:last-child > td {
+  border-bottom: none;
+} */
+
+.node-visualizer-wrapper .promql-string {
+  color: rgb(2, 107, 2);
+}
+
+.data-table .promql-label-name, .graph-legend .promql-label-name {
+  color: black;
+}
+
+.ast-visualizer-wrapper > .alert {
+  margin: 0 1rem;
+}
+
+.tab-pane .alert {
+  margin: 0;
+}
+
+.alert.alert-secondary {
+  background-color: #f8fbff;
+}
+
+.highlighted-text {
+  border-radius: 3px;
+  padding: 2px;
+}
+
+.alert {
+  border-radius: 0;
+}
+
+/* Graph styles. */
+
+
+.graph-legend {
+  margin: 15px 0 15px 55px;
+  font-size: 0.75em;
+  padding: 10px 5px;
+  display: inline-block;
+}
+
+.legend-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  border-radius: 3px;
+  white-space: pre;
+}
+
+.legend-swatch {
+  width: 7px;
+  height: 7px;
+  outline-offset: 1px;
+  outline: 1.5px solid #ccc;
+  margin: 2px 8px 2px 0;
+  display: inline-block;
+}
+
+.legend-item:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.legend-metric-name {
+  margin-right: 1px;
+}
+
+.legend-label-name {
+  font-weight: bold;
+}
+
+.graph {
+  margin: 15px 5px 0 5px;
+}
+
+.graph-chart {
+  height: 500px;
+  width: 100%;
+  /* This is picked up by Flot's axis label font renderer,
+    which ignores "color" and uses "fill" instead. */
+  fill: #495057;
+  font-size: 0.8em;
+}
+
+.graph-chart .flot-overlay {
+  cursor: crosshair;
+}
+
+.graph-tooltip {
+  background: rgba(0,0,0,.8);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+  padding: 8px;
+  border-radius: 3px;
+}
+
+.graph-tooltip .labels {
+  font-size: 11px;
+  line-height: 11px;
+}
+
+.graph-tooltip .detail-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+}
+
+.custom-control label {
+  user-select: none;
+  font-size: .875rem;
+  line-height: 1.8;
+  cursor: pointer;
+}
+
+.node-editor {
+  position: relative;
+  /* background-color: white; */
+  margin: 1px;
+  /* margin: 0 0 6px 0; */
+  /* background-color: white; */
+  padding: 15px;
+  border-top: 1px dotted var(--border-color);
+
+  /* border: 1px solid var(--border-color); */
+    /* margin-top: 15px; */
+    /* margin: 15px; */
+    /* padding: 15px; */
+    /* outline: 1px solid var(--border-color);
+    outline-offset: -1px; */
+    /* overflow-x: auto; */
+}
+
+.node-editor label {
+  font-weight: bold;
+}
+
+.node-editor .custom-control > label {
+  font-weight: normal;
+}
+
+.node-editor > .form-container {
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+}
+
+#warning-tooltip .tooltip-inner {
+  max-width: 400px;
+}
+
+.pending-input-item {
+  border-style: dashed;
+}
+
+.help-dialog {
+  background-color: rgba(70, 70, 70, 0.85);
+  border-radius: 3px;
+  padding: 50px;
+  position: fixed;
+  width: 600px;
+  height: 90%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  color: white;
+  overflow-y: auto;
+}
+
+.help-dialog table td {
+  color: white;
+}
+
+.help-dialog table td.help-dialog-key {
+  color: yellow;
+}
+
+.show-hotkeys {
+    font-size: 0.8em;
+    color: rgb(146, 146, 146);
+    margin-top: 10px;
+    float: right;
+    margin-right: 5px;
+}
+
+.react-autosuggest__container {
+  position: relative;
+  width: 100%;
+}
+
+.react-autosuggest__suggestions-container--open {
+  display: block;
+  position: absolute;
+  min-width: 100%;
+  /* left: 30px; */
+  /* right: 30px; */
+  background-color: #fff;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  z-index: 2;
+  border: 1px solid var(--border-color);
+}
+
+.react-autosuggest__suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.react-autosuggest__suggestion {
+  padding-left: 8px;
+}
+
+.react-autosuggest__suggestion--highlighted {
+  background-color: var(--border-color);
+}

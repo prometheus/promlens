@@ -1,0 +1,7 @@
+This file includes code from the Prometheus project (https://prometheus.io)
+licensed under the Apache 2 License:
+
+https://github.com/prometheus/prometheus/blob/master/LICENSE
+
+It also includes code from various npm packages, for which licenses are
+packaged in the npm_licenses.tar.gz archive file.
