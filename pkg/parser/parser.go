@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
 
-	"github.com/prometheus/prometheus/pkg/labels"
+	"github.com/grafana/regexp"
+	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/promql/parser"
 	prom_httputil "github.com/prometheus/prometheus/util/httputil"
 )
