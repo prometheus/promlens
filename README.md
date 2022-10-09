@@ -15,13 +15,13 @@ The following documents how to run PromLens yourself using the [official Docker 
 To run PromLens as a preview version without any advanced features (link sharing, Grafana integration):
 
 ```
-docker run -p 8080:8080 promlabs/promlens
+docker run -p 8080:8080 prom/promlens
 ```
 
 To run PromLens with link sharing and Grafana integration enabled, using SQLite for link sharing:
 
 ```
-docker run -p 8080:8080 promlabs/promlens \
+docker run -p 8080:8080 prom/promlens \
   --shared-links.sql.driver=sqlite3 \
   --shared-links.sql.dsn=/tmp/promlens-links.db \
   --grafana.url=$GRAFANA_URL \

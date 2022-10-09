@@ -12,7 +12,7 @@ import (
 	"github.com/rakyll/statik/fs"
 
 	// Register static assets.
-	_ "github.com/promlabs/promlens/pkg/react/statik"
+	_ "github.com/prometheus/promlens/pkg/react/statik"
 )
 
 //go:generate statik -src=../../app/build

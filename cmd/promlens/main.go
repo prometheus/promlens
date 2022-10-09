@@ -15,9 +15,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
-	"github.com/promlabs/promlens/pkg/grafana"
-	"github.com/promlabs/promlens/pkg/sharer"
-	"github.com/promlabs/promlens/pkg/web"
+	"github.com/prometheus/promlens/pkg/grafana"
+	"github.com/prometheus/promlens/pkg/sharer"
+	"github.com/prometheus/promlens/pkg/web"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
