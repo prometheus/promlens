@@ -15,6 +15,8 @@ jobs:
       - name: Install snmp_exporter/generator dependencies
         run: sudo apt-get update && sudo apt-get -y install libsnmp-dev
         if: github.repository == 'prometheus/snmp_exporter'
+      - name: generate
+        run: make assets-compress
       - name: Lint
         uses: golangci/golangci-lint-action@v3.2.0
         with:
