@@ -64,7 +64,7 @@ func singleJoiningSlash(a, b string) string {
 	return a + b
 }
 
-func NewBackend(grafanaURL string, authToken string) (*Backend, error) {
+func NewBackend(grafanaURL, authToken string) (*Backend, error) {
 	target, err := url.Parse(grafanaURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid Grafana URL: %v", err)

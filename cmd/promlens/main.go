@@ -59,7 +59,7 @@ func computeExternalURL(u, listenAddr string) (*url.URL, error) {
 	return eu, nil
 }
 
-func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN string, createTables bool, sqlRetention time.Duration) (sharer.Sharer, error) {
+func getLinkSharer(logger log.Logger, gcsBucket, sqlDriver, sqlDSN string, createTables bool, sqlRetention time.Duration) (sharer.Sharer, error) {
 	if sqlDSN == "" && gcsBucket == "" {
 		return nil, nil
 	}
@@ -88,7 +88,7 @@ func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN
 	return s, nil
 }
 
-func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Backend, error) {
+func getGrafanaBackend(url, token, tokenFile string) (*grafana.Backend, error) {
 	if url == "" {
 		return nil, nil
 	}
