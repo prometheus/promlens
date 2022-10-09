@@ -16,7 +16,6 @@ ARG REACT_APP_PROMLENS_ENV=hosted
 COPY . /app
 
 RUN go mod download \
-  && go install github.com/rakyll/statik \
   && apk add curl nodejs npm make tar \
   && (cd app && CYPRESS_INSTALL_BINARY=0 npm i && PUBLIC_URL=. REACT_APP_PROMLENS_ENV=${REACT_APP_PROMLENS_ENV} npm run build) \
   && make npm_licenses \
