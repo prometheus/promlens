@@ -3,16 +3,13 @@ package react
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
-	"github.com/rakyll/statik/fs"
-
-	// Register static assets.
-	_ "github.com/prometheus/promlens/pkg/react/statik"
+	ui "github.com/prometheus/promlens/app"
 )
 
 //go:generate statik -src=../../app/build
@@ -28,17 +25,6 @@ var reactRouterPaths = []string{
 	"/privacy",
 }
 
-// TODO: Make this non-global.
-var statikFS http.FileSystem
-
-func init() {
-	var err error
-	statikFS, err = fs.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func Handle(routePrefix string, externalURL *url.URL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// For paths that the React/Reach router handles, we want to serve the
@@ -48,13 +34,13 @@ func Handle(routePrefix string, externalURL *url.URL) http.HandlerFunc {
 				continue
 			}
 
-			f, err := statikFS.Open("/index.html")
+			f, err := ui.Assets.Open("/build/index.html")
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintf(w, "Error opening React index.html: %v", err)
 				return
 			}
-			idx, err := ioutil.ReadAll(f)
+			idx, err := io.ReadAll(f)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintf(w, "Error reading React index.html: %v", err)
@@ -68,6 +54,7 @@ func Handle(routePrefix string, externalURL *url.URL) http.HandlerFunc {
 
 		// For all other paths, serve auxiliary assets.
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, routePrefix)
-		http.FileServer(statikFS).ServeHTTP(w, r)
+		r.URL.Path = path.Join("/build", r.URL.Path)
+		http.FileServer(ui.Assets).ServeHTTP(w, r)
 	}
 }

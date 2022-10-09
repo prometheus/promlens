@@ -22,15 +22,15 @@ include Makefile.common
 
 DOCKER_IMAGE_NAME ?= promlens
 
-.PHONY: generate
-generate:
-	go generate ./pkg/react
+.PHONY: assets-compress
+assets-compress:
+	@echo '>> compressing assets'
+	scripts/compress_assets.sh
 
 .PHONY: build-ui
 build-ui:
 	cd $(REACT_APP_PATH) && npm i --legacy-peer-deps
 	cd $(REACT_APP_PATH) && PUBLIC_URL=. npm run build
-
 
 .PHONY: npm_licenses
 npm_licenses: $(REACT_APP_NODE_MODULES_PATH)
@@ -47,8 +47,8 @@ docker-build-onprem:
 
 .PHONY: clean
 clean:
-	rm ./pkg/react/statik/statik.go
-	rm -rf ./app/node_modules
+	rm -rf ./app/build
+	rm ./app/embed.go
 
 .PHONY: build
-build: build-ui generate npm_licenses common-build
+build: build-ui assets-compress npm_licenses common-build
