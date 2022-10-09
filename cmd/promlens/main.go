@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -103,7 +102,7 @@ func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Bac
 	}
 
 	if tokenFile != "" {
-		tokenBuf, err := ioutil.ReadFile(tokenFile)
+		tokenBuf, err := os.ReadFile(tokenFile)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error reading Grafana API token file %q", tokenFile)
 		}

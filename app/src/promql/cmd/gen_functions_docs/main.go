@@ -6,10 +6,10 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/grafana/regexp"
 	"github.com/russross/blackfriday/v2"
 )
 
@@ -104,7 +104,7 @@ func main() {
 	fmt.Println("const funcDocs: Record<string, React.ReactNode> = {")
 
 	funcNames := make([]string, 0, len(funcDocs))
-	for k, _ := range funcDocs {
+	for k := range funcDocs {
 		funcNames = append(funcNames, k)
 	}
 	sort.Strings(funcNames)

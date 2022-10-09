@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -57,7 +56,6 @@ type Sharer interface {
 type GCSSharer struct {
 	bucket string
 	client *storage.Client
-	logger log.Logger
 }
 
 func NewGCSSharer(bucket string) (*GCSSharer, error) {
@@ -100,7 +98,7 @@ func (s GCSSharer) GetLink(name string) (pageState string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("error creating GCS bucket reader: %v", err)
 	}
-	ps, err := ioutil.ReadAll(rc)
+	ps, err := io.ReadAll(rc)
 	if err != nil {
 		return "", fmt.Errorf("error reading GCS object: %v", err)
 	}
@@ -355,7 +353,7 @@ func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
 			}
 
 			level.Info(logger).Log("msg", "Creating short link...")
-			pageState := string(body.Bytes())
+			pageState := body.String()
 			name := shortName(pageState)
 			err = s.CreateLink(name, pageState)
 			if err != nil {
