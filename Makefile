@@ -2,11 +2,17 @@ REACT_APP_PATH = app
 REACT_APP_NODE_MODULES_PATH = $(REACT_APP_PATH)/node_modules
 REACT_APP_NPM_LICENSES_TARBALL = "npm_licenses.tar.gz"
 
-.PHONY:
-build:
+.PHONY: generate
+generate:
+	go generate ./pkg/react
+
+.PHONY: build-ui
+build-ui:
 	cd $(REACT_APP_PATH) && npm i --legacy-peer-deps
 	cd $(REACT_APP_PATH) && PUBLIC_URL=. npm run build
-	go generate ./pkg/react
+
+.PHONY:
+build: build-ui generate
 	go build ./cmd/promlens
 
 .PHONY: npm_licenses
