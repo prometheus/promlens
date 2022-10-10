@@ -28,7 +28,7 @@ func startsOrEndsWithQuote(s string) bool {
 
 // computeExternalURL computes a sanitized external URL from a raw input. It infers unset
 // URL parts from the OS and the given listen address.
-func computeExternalURL(u, listenAddr string) (*url.URL, error) {
+func computeExternalURL(u string, listenAddr string) (*url.URL, error) {
 	if u == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
@@ -59,7 +59,7 @@ func computeExternalURL(u, listenAddr string) (*url.URL, error) {
 	return eu, nil
 }
 
-func getLinkSharer(logger log.Logger, gcsBucket, sqlDriver, sqlDSN string, createTables bool, sqlRetention time.Duration) (sharer.Sharer, error) {
+func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN string, createTables bool, sqlRetention time.Duration) (sharer.Sharer, error) {
 	if sqlDSN == "" && gcsBucket == "" {
 		return nil, nil
 	}
@@ -88,7 +88,7 @@ func getLinkSharer(logger log.Logger, gcsBucket, sqlDriver, sqlDSN string, creat
 	return s, nil
 }
 
-func getGrafanaBackend(url, token, tokenFile string) (*grafana.Backend, error) {
+func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Backend, error) {
 	if url == "" {
 		return nil, nil
 	}

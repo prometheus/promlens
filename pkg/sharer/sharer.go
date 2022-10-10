@@ -48,7 +48,7 @@ func init() {
 }
 
 type Sharer interface {
-	CreateLink(name, pageState string) error
+	CreateLink(name string, pageState string) error
 	GetLink(name string) (string, error)
 	Close()
 }
@@ -69,7 +69,7 @@ func NewGCSSharer(bucket string) (*GCSSharer, error) {
 	}, nil
 }
 
-func (s GCSSharer) CreateLink(name, pageState string) error {
+func (s GCSSharer) CreateLink(name string, pageState string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -119,7 +119,7 @@ type SQLSharer struct {
 	logger  log.Logger
 }
 
-func NewSQLSharer(logger log.Logger, driver, dsn string, createTables bool, retention time.Duration) (*SQLSharer, error) {
+func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables bool, retention time.Duration) (*SQLSharer, error) {
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to %q database: %v", driver, err)
@@ -247,7 +247,7 @@ func (s SQLSharer) Close() {
 	s.db.Close()
 }
 
-func (s SQLSharer) CreateLink(name, pageState string) error {
+func (s SQLSharer) CreateLink(name string, pageState string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return fmt.Errorf("error beginning transaction: %v", err)
