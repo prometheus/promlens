@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/prometheus/promlens/pkg/grafana"
-	"github.com/prometheus/promlens/pkg/page_config"
+	"github.com/prometheus/promlens/pkg/pageconfig"
 	"github.com/prometheus/promlens/pkg/parser"
 	"github.com/prometheus/promlens/pkg/react"
 	"github.com/prometheus/promlens/pkg/sharer"
@@ -68,7 +68,7 @@ func Serve(cfg *Config) error {
 		cfg.RoutePrefix = ""
 	}
 
-	http.HandleFunc(cfg.RoutePrefix+"/api/page_config", instr("/api/page_config", page_config.Handle(cfg.Sharer, cfg.GrafanaBackend, cfg.DefaultPrometheusURL, cfg.DefaultGrafanaDatasourceID)))
+	http.HandleFunc(cfg.RoutePrefix+"/api/page_config", instr("/api/page_config", pageconfig.Handle(cfg.Sharer, cfg.GrafanaBackend, cfg.DefaultPrometheusURL, cfg.DefaultGrafanaDatasourceID)))
 	http.HandleFunc(cfg.RoutePrefix+"/api/link", instr("/api/link", sharer.Handle(cfg.Logger, cfg.Sharer)))
 	http.HandleFunc(cfg.RoutePrefix+"/api/parse", instr("/api/parse", parser.Handle))
 	if cfg.GrafanaBackend != nil {

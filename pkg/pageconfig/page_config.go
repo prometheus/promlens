@@ -1,4 +1,4 @@
-package page_config
+package pageconfig
 
 import (
 	"encoding/json"
