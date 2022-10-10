@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -15,10 +14,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
+	"gopkg.in/alecthomas/kingpin.v2"
+
 	"github.com/prometheus/promlens/pkg/grafana"
 	"github.com/prometheus/promlens/pkg/sharer"
 	"github.com/prometheus/promlens/pkg/web"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // TODO: This and computeExternalURL taken from Prometheus.
@@ -29,7 +29,7 @@ func startsOrEndsWithQuote(s string) bool {
 
 // computeExternalURL computes a sanitized external URL from a raw input. It infers unset
 // URL parts from the OS and the given listen address.
-func computeExternalURL(u, listenAddr string) (*url.URL, error) {
+func computeExternalURL(u string, listenAddr string) (*url.URL, error) {
 	if u == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
@@ -103,7 +103,7 @@ func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Bac
 	}
 
 	if tokenFile != "" {
-		tokenBuf, err := ioutil.ReadFile(tokenFile)
+		tokenBuf, err := os.ReadFile(tokenFile)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error reading Grafana API token file %q", tokenFile)
 		}

@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -57,7 +56,6 @@ type Sharer interface {
 type GCSSharer struct {
 	bucket string
 	client *storage.Client
-	logger log.Logger
 }
 
 func NewGCSSharer(bucket string) (*GCSSharer, error) {
@@ -100,7 +98,7 @@ func (s GCSSharer) GetLink(name string) (pageState string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("error creating GCS bucket reader: %v", err)
 	}
-	ps, err := ioutil.ReadAll(rc)
+	ps, err := io.ReadAll(rc)
 	if err != nil {
 		return "", fmt.Errorf("error reading GCS object: %v", err)
 	}
@@ -246,7 +244,7 @@ func (s SQLSharer) Close() {
 	close(s.closeCh)
 	<-s.doneCh
 
-	s.db.Close()
+	_ = s.db.Close()
 }
 
 func (s SQLSharer) CreateLink(name string, pageState string) error {
@@ -258,7 +256,7 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 	err = tx.QueryRow("SELECT id FROM link WHERE short_name = ?", name).Scan(&id)
 	if err == nil {
 		// TODO: Check rollback errors.
-		tx.Rollback()
+		_ = tx.Rollback()
 		// Entry already exists.
 		level.Warn(s.logger).Log("msg", "Short link already exists", "link", name)
 		return nil
@@ -266,17 +264,17 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 
 	if err != sql.ErrNoRows {
 		// TODO: Check rollback errors.
-		tx.Rollback()
+		_ = tx.Rollback()
 		return fmt.Errorf("error checking for link existence: %v", err)
 	}
 
 	_, err = tx.Exec("INSERT INTO link(short_name, page_state) values(?, ?)", name, pageState)
 	if err != nil {
 		// TODO: Check rollback errors.
-		tx.Rollback()
+		_ = tx.Rollback()
 		return fmt.Errorf("error inserting new link: %v", err)
 	}
-	tx.Commit()
+	_ = tx.Commit()
 
 	return nil
 }
@@ -339,7 +337,7 @@ func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
 
 			var body bytes.Buffer
 			_, err := io.Copy(&body, io.LimitReader(r.Body, maxPageStateSize+1))
-			r.Body.Close()
+			_ = r.Body.Close()
 			if err != nil {
 				level.Error(logger).Log("msg", "Error reading body", "err", err)
 				linkCreationErrors.Inc()
@@ -355,7 +353,7 @@ func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
 			}
 
 			level.Info(logger).Log("msg", "Creating short link...")
-			pageState := string(body.Bytes())
+			pageState := body.String()
 			name := shortName(pageState)
 			err = s.CreateLink(name, pageState)
 			if err != nil {
