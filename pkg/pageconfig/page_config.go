@@ -68,7 +68,8 @@ func Handle(
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(pageConfig{
+		// TODO do something with this error
+		_ = json.NewEncoder(w).Encode(pageConfig{
 			Now:                  time.Now().Unix(),
 			GrafanaDatasources:   ds,
 			PageState:            pageState,
