@@ -14,10 +14,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
+	"gopkg.in/alecthomas/kingpin.v2"
+
 	"github.com/prometheus/promlens/pkg/grafana"
 	"github.com/prometheus/promlens/pkg/sharer"
 	"github.com/prometheus/promlens/pkg/web"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // TODO: This and computeExternalURL taken from Prometheus.
