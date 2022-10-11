@@ -52,6 +52,3 @@ clean:
 
 .PHONY: build
 build: build-ui assets-compress npm_licenses common-build
-
-.PHONY: lint
-lint: assets-compress common-lint
