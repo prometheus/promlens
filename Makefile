@@ -30,7 +30,7 @@ assets-compress:
 .PHONY: build-ui
 build-ui:
 	cd $(REACT_APP_PATH) && npm i --legacy-peer-deps
-	cd $(REACT_APP_PATH) && PUBLIC_URL=. npm run build
+	cd $(REACT_APP_PATH) && CI=false PUBLIC_URL=. npm run build
 
 .PHONY: npm_licenses
 npm_licenses: $(REACT_APP_NODE_MODULES_PATH)
