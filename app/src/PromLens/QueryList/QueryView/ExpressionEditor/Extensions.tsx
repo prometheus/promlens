@@ -1,20 +1,15 @@
-import { EditorView, highlightSpecialChars, keymap, placeholder } from '@codemirror/view';
-import { indentOnInput } from '@codemirror/language';
-import { history, historyKeymap } from '@codemirror/history';
-import { defaultKeymap, insertNewlineAndIndent } from '@codemirror/commands';
-import { bracketMatching } from '@codemirror/matchbrackets';
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/closebrackets';
+import { EditorView, highlightSpecialChars, keymap, placeholder, rectangularSelection } from '@codemirror/view';
+import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/language';
+import { defaultKeymap, historyKeymap, history, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap } from '@codemirror/search';
-import { commentKeymap } from '@codemirror/comment';
-import { rectangularSelection } from '@codemirror/rectangular-selection';
 import { highlightSelectionMatches } from '@codemirror/search';
 import { lintKeymap } from '@codemirror/lint';
 import { EditorState, Prec, Extension } from '@codemirror/state';
-import { PromQLExtension } from 'codemirror-promql';
-import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
+import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { theme, promqlHighlighter } from './Theme';
-import { HTTPPrometheusClient } from 'codemirror-promql/dist/esm/client/prometheus';
 import { PromAPI } from '../../../../promAPI/promAPI';
+import { PromQLExtension } from '@prometheus-io/codemirror-promql';
+import { HTTPPrometheusClient } from '@prometheus-io/codemirror-promql/dist/esm/client/prometheus';
 
 const promqlExtension = new PromQLExtension();
 
@@ -53,7 +48,7 @@ export const getExtensions = (
     history(),
     EditorState.allowMultipleSelections.of(true),
     indentOnInput(),
-    enableHighlighting ? promqlHighlighter : [],
+    enableHighlighting ? syntaxHighlighting(promqlHighlighter) : [],
     placeholderStr ? placeholder(placeholderStr) : [],
     bracketMatching(),
     closeBrackets(),
@@ -65,7 +60,6 @@ export const getExtensions = (
       ...defaultKeymap,
       ...searchKeymap,
       ...historyKeymap,
-      ...commentKeymap,
       ...completionKeymap,
       ...lintKeymap,
     ]),
@@ -85,7 +79,7 @@ export const getExtensions = (
         },
       },
     ]),
-    Prec.override(
+    Prec.highest(
       keymap.of([
         {
           key: 'Enter',
