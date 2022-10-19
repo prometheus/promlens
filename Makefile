@@ -37,13 +37,6 @@ npm_licenses: $(REACT_APP_NODE_MODULES_PATH)
 	rm -f $(REACT_APP_NPM_LICENSES_TARBALL)
 	find $(REACT_APP_NODE_MODULES_PATH) -iname "license*" | tar cfj $(REACT_APP_NPM_LICENSES_TARBALL) --transform 's/^/npm_licenses\//' --files-from=-
 
-.PHONY: docker-build-hosted
-docker-build-hosted:
-	docker build -t prom/promlens -f ./Dockerfile ./
-
-docker-build-onprem:
-	docker buildx build --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --push --build-arg=REACT_APP_PROMLENS_ENV=onprem -t prom/promlens -f ./Dockerfile.buildx ./
-
 .PHONY: clean
 clean:
 	rm -rf ./app/build
