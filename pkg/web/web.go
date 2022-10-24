@@ -20,7 +20,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	tookitweb "github.com/prometheus/exporter-toolkit/web"
+	toolkitweb "github.com/prometheus/exporter-toolkit/web"
 
 	"github.com/prometheus/promlens/pkg/grafana"
 	"github.com/prometheus/promlens/pkg/pageconfig"
@@ -32,7 +32,7 @@ import (
 // Config configures the PromLens web UI and API.
 type Config struct {
 	Logger                     log.Logger
-	ToolkitConfig              *tookitweb.FlagConfig
+	ToolkitConfig              *toolkitweb.FlagConfig
 	RoutePrefix                string
 	ExternalURL                *url.URL
 	Sharer                     sharer.Sharer
@@ -92,5 +92,5 @@ func Serve(cfg *Config) error {
 	http.HandleFunc(cfg.RoutePrefix+"/", instr("static", react.Handle(cfg.RoutePrefix, cfg.ExternalURL)))
 
 	server := &http.Server{}
-	return tookitweb.ListenAndServe(server, cfg.ToolkitConfig, cfg.Logger)
+	return toolkitweb.ListenAndServe(server, cfg.ToolkitConfig, cfg.Logger)
 }
