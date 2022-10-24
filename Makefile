@@ -37,6 +37,12 @@ npm_licenses: $(REACT_APP_NODE_MODULES_PATH)
 	rm -f $(REACT_APP_NPM_LICENSES_TARBALL)
 	find $(REACT_APP_NODE_MODULES_PATH) -iname "license*" | tar cfj $(REACT_APP_NPM_LICENSES_TARBALL) --transform 's/^/npm_licenses\//' --files-from=-
 
+.PHONY: tarball
+tarball: npm_licenses common-tarball
+
+.PHONY: docker
+docker: npm_licenses common-docker
+
 .PHONY: clean
 clean:
 	rm -rf ./app/build
