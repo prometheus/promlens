@@ -15,7 +15,6 @@
 DOCKER_ARCHS ?= amd64 armv7 arm64 ppc64le s390x
 
 REACT_APP_PATH = app
-REACT_APP_NODE_MODULES_PATH = $(REACT_APP_PATH)/node_modules
 REACT_APP_NPM_LICENSES_TARBALL = "npm_licenses.tar.bz2"
 
 include Makefile.common
@@ -27,12 +26,16 @@ assets-compress:
 	@echo '>> compressing assets'
 	scripts/compress_assets.sh
 
+.PHONY: ui-install
+ui-install:
+	cd $(REACT_APP_PATH) && npm install --legacy-peer-deps
+
 .PHONY: build-ui
 build-ui:
 	CI=false PUBLIC_URL=. ./scripts/build_ui.sh
 
 .PHONY: npm_licenses
-npm_licenses: $(REACT_APP_NODE_MODULES_PATH)
+npm_licenses: ui-install
 	@echo ">> bundling npm licenses"
 	rm -f $(REACT_APP_NPM_LICENSES_TARBALL)
 	find $(REACT_APP_NODE_MODULES_PATH) -iname "license*" | tar cfj $(REACT_APP_NPM_LICENSES_TARBALL) --transform 's/^/npm_licenses\//' --files-from=-
