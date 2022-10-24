@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
+	"github.com/prometheus/exporter-toolkit/web/kingpinflag"
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/prometheus/promlens/pkg/grafana"
@@ -42,7 +43,11 @@ func startsOrEndsWithQuote(s string) bool {
 
 // computeExternalURL computes a sanitized external URL from a raw input. It infers unset
 // URL parts from the OS and the given listen address.
-func computeExternalURL(u string, listenAddr string) (*url.URL, error) {
+func computeExternalURL(u string, listenAddrs []string) (*url.URL, error) {
+	if len(listenAddrs) == 0 {
+		return nil, errors.New("no listen addresses defined")
+	}
+	listenAddr := listenAddrs[0]
 	if u == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
@@ -145,7 +150,6 @@ func main() {
 	grafanaTokenFile := app.Flag("grafana.api-token-file", "A file containing the auth token to pass to the Grafana API.").Default("").String()
 	grafanaDefaultDatasourceID := app.Flag("grafana.default-datasource-id", "The default Grafana datasource ID to use (overrides Grafana's own default).").Default("0").Int64()
 
-	listenAddr := app.Flag("web.listen-address", "The address to listen on for the web API.").Default(":8080").String()
 	promlensURL := app.Flag("web.external-url", "The URL under which PromLens is externally reachable (for example, if PromLens is served via a reverse proxy). Used for generating relative and absolute links back to PromLens itself. If the URL has a path portion, it will be used to prefix all HTTP endpoints served by PromLens. If omitted, relevant URL components will be derived automatically.").Default("").String()
 	routePrefix := app.Flag("web.route-prefix", "Prefix for the internal routes of web endpoints. Defaults to path of --web.external-url.").Default("").String()
 
@@ -153,6 +157,8 @@ func main() {
 
 	var logCfg promlog.Config
 	promlogflag.AddFlags(app, &logCfg)
+
+	toolkitConfig := kingpinflag.AddFlags(app, ":8080")
 
 	_, err := app.Parse(os.Args[1:])
 	if err != nil {
@@ -163,7 +169,7 @@ func main() {
 
 	logger := promlog.New(&logCfg)
 
-	externalURL, err := computeExternalURL(*promlensURL, *listenAddr)
+	externalURL, err := computeExternalURL(*promlensURL, *toolkitConfig.WebListenAddresses)
 	if err != nil {
 		level.Error(logger).Log("msg", "Error parsing external URL.", "err", err, "url", *promlensURL)
 		os.Exit(2)
@@ -205,7 +211,7 @@ func main() {
 
 	level.Error(logger).Log("msg", "Running HTTP server failed.", "err", web.Serve(&web.Config{
 		Logger:                     logger,
-		ListenAddr:                 *listenAddr,
+		ToolkitConfig:              toolkitConfig,
 		RoutePrefix:                *routePrefix,
 		ExternalURL:                externalURL,
 		Sharer:                     shr,
