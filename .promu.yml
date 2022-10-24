@@ -21,7 +21,7 @@ tarball:
     files:
         - LICENSE
         - NOTICE
-        - npm_licenses.tar.gz.bz2
+        - npm_licenses.tar.bz2
 crossbuild:
     platforms:
         - darwin
