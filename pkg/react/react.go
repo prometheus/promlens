@@ -22,6 +22,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/prometheus/common/server"
+
 	ui "github.com/prometheus/promlens/app"
 )
 
@@ -68,6 +70,6 @@ func Handle(routePrefix string, externalURL *url.URL) http.HandlerFunc {
 		// For all other paths, serve auxiliary assets.
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, routePrefix)
 		r.URL.Path = path.Join("/build", r.URL.Path)
-		http.FileServer(ui.Assets).ServeHTTP(w, r)
+		server.StaticFileServer(ui.Assets).ServeHTTP(w, r)
 	}
 }
