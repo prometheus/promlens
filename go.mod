@@ -5,7 +5,7 @@ go 1.17
 require (
 	cloud.google.com/go/storage v1.27.0
 	github.com/go-kit/log v0.2.1
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grafana/regexp v0.0.0-20220304095617-2e8d9baf4ac2
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pkg/errors v0.9.1
