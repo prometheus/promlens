@@ -32,7 +32,11 @@ To build PromLens from source, you need:
 
 * Go [version 1.17 or greater](https://golang.org/doc/install).
 * NodeJS [version 16 or greater](https://nodejs.org/).
+  * Note: With NodeJS v17+ you may experience an `error:0308010C:digital envelope routines::unsupported` error. This can be worked around by either exporting the following environment variable `NODE_OPTIONS=--openssl-legacy-provider` (please be aware of security considerations) or downgrading to NodeJS v16 [source](https://stackoverflow.com/a/69699772).
 * npm [version 7 or greater](https://www.npmjs.com/).
+* make (https://www.gnu.org/software/make/)
+* bzip2 (https://sourceware.org/bzip2/downloads.html)
+* curl (https://curl.se/download.html)
 
 Start by cloning the repository:
 
