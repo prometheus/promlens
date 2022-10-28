@@ -125,7 +125,7 @@ func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Bac
 		if err != nil {
 			return nil, errors.Wrapf(err, "error reading Grafana API token file %q", tokenFile)
 		}
-		token = string(tokenBuf)
+		token = strings.TrimSpace(string(tokenBuf))
 	}
 
 	gb, err := grafana.NewBackend(url, token)
