@@ -30,8 +30,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	// Load SQL drivers.
+	_ "github.com/glebarez/go-sqlite"
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 const maxPageStateSize = 512 * 1024
@@ -168,7 +168,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 			}
 		}
 
-	case "sqlite3":
+	case "sqlite":
 		_, err := db.Exec("PRAGMA foreign_keys = ON")
 		if err != nil {
 			return nil, fmt.Errorf("error enabling foreign key support: %v", err)

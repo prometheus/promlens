@@ -78,7 +78,7 @@ To run PromLens with link sharing and Grafana integration enabled, using SQLite 
 
 ```
 ./promlens \
-  --shared-links.sql.driver=sqlite3 \
+  --shared-links.sql.driver=sqlite \
   --shared-links.sql.dsn=/tmp/promlens-links.db \
   --grafana.url=$GRAFANA_URL \
   --grafana.api-token=$GRAFANA_API_TOKEN
@@ -98,15 +98,15 @@ For boolean flags that default to `true`, you can set them to `false` by specify
 
 Link sharing allows persisting the state of an entire PromLens query page and sharing it with others.
 
-By default, the link sharing backend is disabled. You can enable link sharing either via Google Cloud Storage, MySQL, or SQLite3:
+By default, the link sharing backend is disabled. You can enable link sharing either via Google Cloud Storage, MySQL, or SQLite:
 
 #### Google Cloud Storage
 
 To use Google Cloud Storage (GCS) for link sharing, set the `--shared-links.gcs.bucket=<bucket name>` flag and set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a JSON file containing your service account credentials (needs to have permission to create, delete, and view objects in the provided bucket).
 
-#### SQlite3
+#### SQLite
 
-To save shared links to a local SQLite3 database, set the `--shared-links.sql.driver=sqlite3` and `--shared-links.sql.dsn=<database filename>` flags.
+To save shared links to a local SQLite database, set the `--shared-links.sql.driver=sqlite` and `--shared-links.sql.dsn=<database filename>` flags.
 
 #### MySQL
 
