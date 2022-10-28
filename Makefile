@@ -15,6 +15,7 @@
 DOCKER_ARCHS ?= amd64 armv7 arm64 ppc64le s390x
 
 REACT_APP_PATH = app
+REACT_APP_NODE_MODULES_PATH = $(REACT_APP_PATH)/node_modules
 REACT_APP_NPM_LICENSES_TARBALL = "npm_licenses.tar.bz2"
 
 include Makefile.common
