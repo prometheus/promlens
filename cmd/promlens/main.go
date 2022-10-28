@@ -87,9 +87,14 @@ func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN
 		return nil, errors.New("multiple link sharing backends are configured - please specify only one")
 	}
 
+	if sqlDriver == "sqlite3" {
+		sqlDriver = "sqlite"
+		level.Warn(logger).Log("msg", "The 'sqlite3' driver is deprecated, using 'sqlite' as a replacement.")
+	}
+
 	if sqlDSN != "" {
-		if sqlDriver != "mysql" && sqlDriver != "sqlite3" {
-			return nil, errors.Errorf("unsupported SQL driver %q, supported values are 'mysql' and 'sqlite3'", sqlDriver)
+		if sqlDriver != "mysql" && sqlDriver != "sqlite" {
+			return nil, errors.Errorf("unsupported SQL driver %q, supported values are 'mysql' and 'sqlite'", sqlDriver)
 		}
 
 		s, err := sharer.NewSQLSharer(logger, sqlDriver, sqlDSN, createTables, sqlRetention)
@@ -140,8 +145,8 @@ func main() {
 	app.HelpFlag.Short('h')
 
 	sharedLinksGCSBucket := app.Flag("shared-links.gcs.bucket", "Name of the GCS bucket for storing shared links. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the JSON file defining your service account credentials (needs to have permission to create, delete, and view objects in the provided bucket).").Default("").String()
-	sharedLinksSQLDriver := app.Flag("shared-links.sql.driver", "The SQL driver to use for storing shared links in a SQL database. Supported values: [mysql, sqlite3].").Default("").String()
-	sharedLinksSQLDSN := app.Flag("shared-links.sql.dsn", "SQL Data Source Name when using a SQL database to shared links (see https://github.com/go-sql-driver/mysql#dsn-data-source-name) for MySQL, https://github.com/mattn/go-sqlite3#dsn-examples for SQLite3). Alternatively, use the environment variable PROMLENS_SHARED_LINKS_DSN to indicate this value.").Default("").String()
+	sharedLinksSQLDriver := app.Flag("shared-links.sql.driver", "The SQL driver to use for storing shared links in a SQL database. Supported values: [mysql, sqlite].").Default("").String()
+	sharedLinksSQLDSN := app.Flag("shared-links.sql.dsn", "SQL Data Source Name when using a SQL database to shared links (see https://github.com/go-sql-driver/mysql#dsn-data-source-name) for MySQL, https://github.com/glebarez/go-sqlite#example for SQLite). Alternatively, use the environment variable PROMLENS_SHARED_LINKS_DSN to indicate this value.").Default("").String()
 	createSharedLinksTables := app.Flag("shared-links.sql.create-tables", "Whether to automatically create the required tables when using a SQL database for shared links.").Default("true").Bool()
 	sharedLinksRetention := app.Flag("shared-links.sql.retention", "The maximum retention time for shared links when using a SQL database (e.g. '10m', '12h'). Set to 0 for infinite retention.").Default("0").Duration()
 
