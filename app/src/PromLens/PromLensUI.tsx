@@ -2,7 +2,6 @@ import React, { FC, useState, useMemo } from 'react';
 
 import ASTNode from '../promql/ast';
 import QueryList from './QueryList/QueryList';
-import { RouteComponentProps } from '@reach/router';
 import NodeVisualizer from './NodeVisualizer/NodeVisualizer';
 import { denormalizeAST } from '../state/normalizeAST';
 import { connect } from 'react-redux';
@@ -27,7 +26,7 @@ interface PromLensUIOwnProps {
   initialTrigger: boolean;
 }
 
-const PromLens: FC<PromLensUIStateProps & PromLensUIOwnProps & RouteComponentProps & PathPrefixProps> = ({
+const PromLens: FC<PromLensUIStateProps & PromLensUIOwnProps & PathPrefixProps> = ({
   pathPrefix,
   serverSettings,
   datasources,

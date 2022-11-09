@@ -22,5 +22,5 @@ then
 fi
 
 cd app
-npm i --legacy-peer-deps
+npm i
 npm run build
