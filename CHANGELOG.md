@@ -1,5 +1,12 @@
 **NOTE:** With the open-sourcing of PromLens by [PromLabs](https://promlabs.com/), we decided to reset the latest proprietary version from 1.1.0 back to 0.1.0. We still list the proprietary version history in the changelog below for reference, denoted by a `promlabs-` version prefix.
 
+## 0.2.0 / 2022-11-10
+
+* [ENHANCEMENT]: Allow building PromLens without CGO by switching to the pure-Go SQLite library `glebarez/go-sqlite`. This also deprecates the flag value `--shared-links.sql.driver=sqlite3` in favor of `--shared-links.sql.driver=sqlite`. #42
+* [ENHANCEMENT]: Allow having end-of-file newlines in the Grafana key file by trimming whitespace from the file contents. #43
+* [BUGFIX]: Fix PromQL syntax highlighting in the text editor by updating / removing various npm dependencies. #47
+* [BUGFIX]: Fix serving of /favicon.ico. #36
+
 ## 0.1.0 / 2022-10-25
 
 This version marks the initial open-sourcing of PromLens to the Prometheus project by PromLabs. See the [PromLabs announcement blog post](https://promlabs.com/blog/2022/10/25/promlabs-and-chronosphere-open-source-the-promlens-query-builder) for more details. Note that we are **resetting** the versioning scheme from the prior proprietary PromLabs version 1.1.0 back to 0.1.0, as this gives us more flexibility with regards to breaking changes. The rationale for allowing a version reset is that the project now lives under a new namespace and governance, including a new location for its source code and Docker images.
