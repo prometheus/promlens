@@ -25,9 +25,15 @@ tarball:
 crossbuild:
     platforms:
         - darwin
-        - dragonfly
         - freebsd
-        - illumos
-        - linux
-        - netbsd
-        - windows
+        - linux/386
+        - linux/amd64
+        - linux/arm
+        - linux/arm64
+        - linux/ppc64le
+        - linux/s390x
+        - netbsd/amd64
+        - netbsd/arm
+        - windows/386
+        - windows/amd64
+        - windows/arm64
