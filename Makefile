@@ -29,7 +29,7 @@ assets-compress:
 
 .PHONY: ui-install
 ui-install:
-	cd $(REACT_APP_PATH) && npm install --legacy-peer-deps
+	cd $(REACT_APP_PATH) && npm install
 
 .PHONY: build-ui
 build-ui:

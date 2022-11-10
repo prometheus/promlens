@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import { Router } from '@reach/router';
 
 import TopNav from './TopNav';
 import PromLens from './pages/PromLens';
@@ -13,9 +12,7 @@ const App: FC<PathPrefixProps> = ({ pathPrefix }) => {
       <TopNav pathPrefix={pathPrefix} />
       {/* Without primary={false}, the page doesn't scroll to the top upon page change.
         See https://github.com/reach/router/issues/242#issuecomment-467082358 */}
-      <Router primary={false} basepath={`${pathPrefix}/`}>
-        <PromLens path="/" pathPrefix={pathPrefix} />
-      </Router>
+      <PromLens pathPrefix={pathPrefix} />
     </DndProvider>
   );
 };

@@ -82,7 +82,7 @@ describe('GraphHelpers', () => {
       try {
         formatValue(undefined as any);
       } catch (error) {
-        expect(error.message).toEqual("couldn't format a value, this is a bug");
+        expect((error as Error).message).toEqual("couldn't format a value, this is a bug");
       }
     });
   });

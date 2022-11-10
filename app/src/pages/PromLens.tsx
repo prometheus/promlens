@@ -1,6 +1,4 @@
 import React, { FC, useState, useEffect } from 'react';
-
-import { RouteComponentProps } from '@reach/router';
 import { Container, Alert } from 'react-bootstrap';
 import { createStore } from 'redux';
 import { importState, setServerSettings, setExpr } from '../state/actions';
@@ -105,7 +103,7 @@ const examplePageState = {
   version: 1,
 } as ExportedStateV1;
 
-const PromLens: FC<RouteComponentProps & PathPrefixProps> = ({ pathPrefix }) => {
+const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
   const [pageConfigLoading, setPageConfigLoading] = useState<boolean>(true);
   const [pageConfigError, setPageConfigError] = useState<string | null>(null);
@@ -169,7 +167,7 @@ const PromLens: FC<RouteComponentProps & PathPrefixProps> = ({ pathPrefix }) => 
             // TODO: Somewhat duplicated with access in PromLensUI.
             localStorage.setItem('promlens.show-example-page-link', 'false');
           } catch (error) {
-            setStateImportError(error);
+            setStateImportError((error as Error).message);
           }
         } else {
           // If no initial page state is provided and Grafana datasources contain a default server,

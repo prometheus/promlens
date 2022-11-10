@@ -24,7 +24,7 @@ const DurationEditor: FC<DurationEditorProps> = ({ duration: initialDuration, on
       onUpdate(parseDuration(duration));
       setDurationError('');
     } catch (error) {
-      setDurationError(error.message);
+      setDurationError((error as Error).message);
     }
   };
 

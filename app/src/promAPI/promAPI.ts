@@ -92,7 +92,7 @@ export class PromAPI {
           setError(undefined);
           setData(apiRes.data!);
         } catch (error) {
-          setError(error);
+          setError(error as Error);
         } finally {
           setLoading(false);
         }
