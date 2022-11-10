@@ -31,7 +31,7 @@
     "react-icons": "^4.1.0",
     "react-redux": "^7.2.4",
     "react-resize-detector": "^6.7.2",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.1",
     "redux": "^4.1.0",
     "tempusdominus-bootstrap-4": "^5.39.0",
     "tempusdominus-core": "^5.19.0"
