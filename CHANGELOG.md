@@ -2,8 +2,10 @@
 
 ## 0.2.0 / 2022-11-10
 
+* [FEATURE]: Add `--version` flag and `promlens_build_info` metric. #54
+* [CHANGE]: Remove support for `illumos` and `dragonfly` platforms, as well as several specific platform/architecture combinations (see the downloads at https://github.com/prometheus/promlens/releases/tag/v0.2.0 for all available build targets). #50
 * [ENHANCEMENT]: Allow building PromLens without CGO by switching to the pure-Go SQLite library `glebarez/go-sqlite`. This also deprecates the flag value `--shared-links.sql.driver=sqlite3` in favor of `--shared-links.sql.driver=sqlite`. #42
-* [ENHANCEMENT]: Allow having end-of-file newlines in the Grafana key file by trimming whitespace from the file contents. #43
+* [ENHANCEMENT]: Allow end-of-file newlines in the Grafana key file by trimming whitespace from the file contents. #43
 * [BUGFIX]: Fix PromQL syntax highlighting in the text editor by updating / removing various npm dependencies. #47
 * [BUGFIX]: Fix serving of /favicon.ico. #36
 
