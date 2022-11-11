@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
+	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web/kingpinflag"
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -142,6 +143,7 @@ func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Bac
 
 func main() {
 	app := kingpin.New(filepath.Base(os.Args[0]), "The PromLens server")
+	app.Version(version.Print("promlens"))
 	app.HelpFlag.Short('h')
 
 	sharedLinksGCSBucket := app.Flag("shared-links.gcs.bucket", "Name of the GCS bucket for storing shared links. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the JSON file defining your service account credentials (needs to have permission to create, delete, and view objects in the provided bucket).").Default("").String()
