@@ -33,7 +33,5 @@ crossbuild:
         - linux/ppc64le
         - linux/s390x
         - netbsd/amd64
-        - netbsd/arm
-        - windows/386
         - windows/amd64
         - windows/arm64
