@@ -1,6 +1,6 @@
 **NOTE:** With the open-sourcing of PromLens by [PromLabs](https://promlabs.com/), we decided to reset the latest proprietary version from 1.1.0 back to 0.1.0. We still list the proprietary version history in the changelog below for reference, denoted by a `promlabs-` version prefix.
 
-## 0.2.0 / 2022-11-10
+## 0.2.0 / 2022-11-11
 
 * [FEATURE]: Add `--version` flag and `promlens_build_info` metric. #54
 * [CHANGE]: Remove support for `illumos` and `dragonfly` platforms, as well as several specific platform/architecture combinations (see the downloads at https://github.com/prometheus/promlens/releases/tag/v0.2.0 for all available build targets). #50
