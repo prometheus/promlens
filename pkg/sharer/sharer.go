@@ -32,6 +32,7 @@ import (
 	// Load SQL drivers.
 	_ "github.com/glebarez/go-sqlite"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 const maxPageStateSize = 512 * 1024
@@ -167,7 +168,34 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 				return nil, fmt.Errorf("Error creating view table: %v", err)
 			}
 		}
+	case "postgres":
+		db.SetConnMaxLifetime(0)
+		db.SetMaxIdleConns(3)
+		db.SetMaxOpenConns(3)
 
+		if createTables {
+			_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS link (
+			id SERIAL PRIMARY KEY,
+			created_at timestamptz DEFAULT now(),
+			short_name VARCHAR(11) UNIQUE,
+			page_state TEXT
+		)`)
+			if err != nil {
+				return nil, fmt.Errorf("error creating link table: %v", err)
+			}
+			_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS view(
+			id SERIAL PRIMARY KEY,
+			link_id INT,
+			viewed_at timestamptz DEFAULT now(),
+			FOREIGN KEY(link_id) REFERENCES link(id) ON DELETE CASCADE
+		)`,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("Error creating view table: %v", err)
+			}
+		}
 	case "sqlite":
 		_, err := db.Exec("PRAGMA foreign_keys = ON")
 		if err != nil {
@@ -238,13 +266,15 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 }
 
 func (s SQLSharer) cleanupOldLinks(retention time.Duration) (int64, error) {
-	timestampFn := "DATETIME"
-	if s.driver == "mysql" {
-		timestampFn = "TIMESTAMP"
+	var query string
+	if s.driver == "postgres" {
+		query = `DELETE FROM link WHERE created_at < $1::timestamptz`
+	} else if s.driver == "mysql" {
+		query = `DELETE FROM link WHERE created_at < TIMESTAMP(?)`
+	} else {
+		query = `DELETE FROM link WHERE created_at < DATETIME(?)`
 	}
-
-	res, err := s.db.Exec(`
-		DELETE FROM link WHERE created_at < `+timestampFn+`(?)`,
+	res, err := s.db.Exec(query,
 		time.Now().Add(-retention),
 	)
 	if err != nil {
@@ -266,7 +296,13 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 		return fmt.Errorf("error beginning transaction: %v", err)
 	}
 	id := 0
-	err = tx.QueryRow("SELECT id FROM link WHERE short_name = ?", name).Scan(&id)
+	var query string
+	if s.driver == "postgres" {
+		query = "SELECT id FROM link WHERE short_name = $1"
+	} else {
+		query = "SELECT id FROM link WHERE short_name = ?"
+	}
+	err = tx.QueryRow(query, name).Scan(&id)
 	if err == nil {
 		// TODO: Check rollback errors.
 		_ = tx.Rollback()
@@ -280,8 +316,12 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 		_ = tx.Rollback()
 		return fmt.Errorf("error checking for link existence: %v", err)
 	}
-
-	_, err = tx.Exec("INSERT INTO link(short_name, page_state) values(?, ?)", name, pageState)
+	if s.driver == "postgres" {
+		query = "INSERT INTO link(short_name, page_state) values($1, $2)"
+	} else {
+		query = "INSERT INTO link(short_name, page_state) values(?, ?)"
+	}
+	_, err = tx.Exec(query, name, pageState)
 	if err != nil {
 		// TODO: Check rollback errors.
 		_ = tx.Rollback()
@@ -299,8 +339,13 @@ func (s SQLSharer) GetLink(name string) (pageState string, err error) {
 			linkLookupErrors.Inc()
 		}
 	}()
-
-	stmt, err := s.db.Prepare("SELECT id, page_state FROM link WHERE short_name = ?")
+	var query string
+	if s.driver == "postgres" {
+		query = "SELECT id, page_state FROM link WHERE short_name = $1"
+	} else {
+		query = "SELECT id, page_state FROM link WHERE short_name = ?"
+	}
+	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return "", fmt.Errorf("error preparing statement: %v", err)
 	}
@@ -313,7 +358,12 @@ func (s SQLSharer) GetLink(name string) (pageState string, err error) {
 		return "", err
 	}
 
-	_, err = s.db.Exec("INSERT INTO view(link_id) values(?)", id)
+	if s.driver == "postgres" {
+		query = "INSERT INTO view(link_id) values($1)"
+	} else {
+		query = "INSERT INTO view(link_id) values(?)"
+	}
+	_, err = s.db.Exec(query, id)
 	if err != nil {
 		return "", fmt.Errorf("error inserting view: %v", err)
 	}

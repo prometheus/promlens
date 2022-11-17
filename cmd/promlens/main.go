@@ -94,8 +94,8 @@ func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN
 	}
 
 	if sqlDSN != "" {
-		if sqlDriver != "mysql" && sqlDriver != "sqlite" {
-			return nil, errors.Errorf("unsupported SQL driver %q, supported values are 'mysql' and 'sqlite'", sqlDriver)
+		if sqlDriver != "mysql" && sqlDriver != "sqlite" && sqlDriver != "postgres" {
+			return nil, errors.Errorf("unsupported SQL driver %q, supported values are 'mysql', 'postgres' and 'sqlite'", sqlDriver)
 		}
 
 		s, err := sharer.NewSQLSharer(logger, sqlDriver, sqlDSN, createTables, sqlRetention)

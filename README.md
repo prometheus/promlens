@@ -110,7 +110,7 @@ To save shared links to a local SQLite database, set the `--shared-links.sql.dri
 
 #### MySQL
 
-To save shared links in a MySQL database, set the `--shared-links.sql.driver=mysql` and `--shared-links.sql.dsn=<data source name>` flag (see https://github.com/go-sql-driver/mysql#dsn-data-source-name for MySQL DNS specifications).
+To save shared links in a MySQL database, set the `--shared-links.sql.driver=mysql` and `--shared-links.sql.dsn=<data source name>` flag (see https://github.com/go-sql-driver/mysql#dsn-data-source-name for MySQL DSN specifications).
 
 By default, PromLens will try to auto-create the necessary tables in your MySQL database. This requires the PromLens database user to have `CREATE` permissions. To turn off automatic table creation for MySQL, set the `--no-shared-links.sql.create-tables` flag. If you want to create tables manually, run the following against your PromLens MySQL database:
 
@@ -126,6 +126,28 @@ CREATE TABLE IF NOT EXISTS view(
   id INT AUTO_INCREMENT PRIMARY KEY,
   link_id INTEGER,
   viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(link_id) REFERENCES link(id)
+);
+```
+
+#### Postgres
+
+To save shared links in a Postgres database, set the `--shared-links.sql.driver=postgres` and `--shared-links.sql.dsn=<data source name>` flag (see https://pkg.go.dev/github.com/lib/pq#hdr-Connection_String_Parameters for Postgres DSN specifications).
+
+By default, PromLens will try to auto-create the necessary tables in your Postgres database. This requires the PromLens database user to have `CREATE` permissions. To turn off automatic table creation for Postgres, set the `--no-shared-links.sql.create-tables` flag. If you want to create tables manually, run the following against your PromLens Postgres database:
+
+```sql
+CREATE TABLE IF NOT EXISTS link (
+  id SERIAL PRIMARY KEY,
+  created_at timestamptz DEFAULT now(),
+  short_name VARCHAR(11) UNIQUE,
+  page_state TEXT
+);
+
+CREATE TABLE IF NOT EXISTS view(
+  id SERIAL PRIMARY KEY,
+  link_id INTEGER,
+  viewed_at timestamptz DEFAULT now(),
   FOREIGN KEY(link_id) REFERENCES link(id)
 );
 ```
