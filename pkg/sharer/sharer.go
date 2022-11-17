@@ -267,11 +267,12 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 
 func (s SQLSharer) cleanupOldLinks(retention time.Duration) (int64, error) {
 	var query string
-	if s.driver == "postgres" {
+	switch s.driver {
+	case "postgres":
 		query = `DELETE FROM link WHERE created_at < $1::timestamptz`
-	} else if s.driver == "mysql" {
+	case "mysql":
 		query = `DELETE FROM link WHERE created_at < TIMESTAMP(?)`
-	} else {
+	default:
 		query = `DELETE FROM link WHERE created_at < DATETIME(?)`
 	}
 	res, err := s.db.Exec(query,
