@@ -119,7 +119,7 @@ func (b *Backend) GetDatasources() (dsSettings []DatasourceSettings, err error) 
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	req.Header.Add("Authorization", "Bearer "+b.authToken)
+	req.Header.Set("Authorization", "Bearer "+b.authToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
