@@ -91,7 +91,7 @@ func NewBackend(grafanaURL string, authToken string) (*Backend, error) {
 				req.Host = target.Host
 				req.URL.Path = singleJoiningSlash(target.Path, strings.TrimPrefix(req.URL.Path, "/api/grafana/"))
 				log.Printf("Proxying to Grafana at %s...", req.URL.Path)
-				req.Header.Add("Authorization", "Bearer "+authToken)
+				req.Header.Set("Authorization", "Bearer "+authToken)
 				if _, ok := req.Header["User-Agent"]; !ok {
 					// explicitly disable User-Agent so it's not set to default value
 					req.Header.Set("User-Agent", "")
@@ -119,7 +119,7 @@ func (b *Backend) GetDatasources() (dsSettings []DatasourceSettings, err error) 
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	req.Header.Add("Authorization", "Bearer "+b.authToken)
+	req.Header.Set("Authorization", "Bearer "+b.authToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
