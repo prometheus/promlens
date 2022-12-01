@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	cloud.google.com/go/storage v1.27.0
-	github.com/glebarez/go-sqlite v1.19.2
+	github.com/glebarez/go-sqlite v1.19.5
 	github.com/go-kit/log v0.2.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grafana/regexp v0.0.0-20220304095617-2e8d9baf4ac2
@@ -74,8 +74,8 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.21.4 // indirect
+	modernc.org/libc v1.21.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.4.0 // indirect
-	modernc.org/sqlite v1.19.4 // indirect
+	modernc.org/sqlite v1.19.5 // indirect
 )
