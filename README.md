@@ -26,6 +26,18 @@ As a minimal example, you should be able to run PromLens like this:
 docker run -p 8080:8080 prom/promlens
 ```
 
+### Using Kubernetes
+
+A Helm chart is available [here](https://github.com/christianknell/helm-charts/tree/main/charts/promlens) and published in the [ArtifactHub](https://artifacthub.io/packages/helm/christianknell/promlens).
+
+As a minimal example, you should be able to install PromLens using [Helm](https://helm.sh) like this:
+
+```bash
+helm repo add christianknell https://christianknell.github.io/helm-charts
+helm repo update
+helm install promlens christianknell/promlens
+```
+
 ### Building from source
 
 To build PromLens from source, you need:
