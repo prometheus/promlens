@@ -16,7 +16,7 @@ require (
 	github.com/prometheus/exporter-toolkit v0.8.2
 	github.com/prometheus/prometheus v0.40.5
 	github.com/russross/blackfriday/v2 v2.1.0
-	golang.org/x/net v0.2.0
+	golang.org/x/net v0.4.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
@@ -68,8 +68,8 @@ require (
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/oauth2 v0.1.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.103.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
