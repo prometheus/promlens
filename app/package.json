@@ -10,7 +10,7 @@
     "@codemirror/search": "^6.2.1",
     "@codemirror/state": "^6.1.4",
     "@codemirror/view": "^6.3.1",
-    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@lezer/highlight": "^1.1.4",
     "@prometheus-io/codemirror-promql": "^0.42.0",
