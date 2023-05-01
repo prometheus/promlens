@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.28.1
 	github.com/glebarez/go-sqlite v1.21.1
 	github.com/go-kit/log v0.2.1
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd
 	github.com/lib/pq v1.10.7
 	github.com/pkg/errors v0.9.1
