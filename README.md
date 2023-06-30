@@ -165,6 +165,10 @@ To create an API token suitable for looking up datasources in Grafana:
 - Give the key a descriptive name, set the "Role" to "Admin", and set its life time to the desired duration (long is recommended, as you will need to regenerate it frequently otherwise).
 - Press "Add" and note down the displayed API key.
 
+### Set Grafana datasource in URL
+
+You can pre-select a specific grafana datasource when the page loads by appending a `ds` query parameter to the PromLens URL. For example, https://promlens.com/?ds=1. This works along with the `q` query parameter and shared links. You can find the IDs of the datasources by visiting `<promLenURL>/api/page_config`.
+
 ### Direct links to queries
 
 You can link to a specific query without creating a persisted shared link by appending a `q` query parameter to the PromLens URL. For example, https://promlens.com/?q=up directly displays and executes the query `up`. For more complex shared pages, we still recommend creating a full shared page link, as this allows more control over the tree view state, as well as the selected visualization methods.
