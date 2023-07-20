@@ -7,6 +7,7 @@ import { parsePrometheusFloat, formatPrometheusFloat } from '../../../../utils/u
 import { labelNameList } from '../../../../utils/LabelNameList';
 import { isComparisonOperator, isSetOperator } from '../../../../promql/utils';
 import { Alert, Table, Form } from 'react-bootstrap';
+import { useLocalStorage } from '../../../../hooks/useLocalStorage';
 
 interface VectorVectorBinaryExprExplainViewProps {
   node: BinaryExpr;
@@ -118,7 +119,10 @@ const explanationText = (node: BinaryExpr): React.ReactNode => {
 };
 
 const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewProps> = ({ node, lhs, rhs }) => {
-  const [allowLineBreaks, setAllowLineBreaks] = useState(false);
+  const [allowLineBreaks, setAllowLineBreaks] = useLocalStorage<boolean>(
+    'promlens.explain.binary-operators.break-long-lines',
+    true
+  );
 
   const { matching } = node;
   if (matching === null) {
