@@ -3,9 +3,9 @@ import { BinaryExpr } from '../../../../promql/ast';
 import { InstantSample, SampleValue } from '../../../QueryList/QueryView/QueryResultTypes';
 import SeriesName from '../../../../utils/SeriesName';
 import { parsePrometheusFloat, formatPrometheusFloat } from '../../../../utils/utils';
-import { vectorElemBinop } from './computeBinop';
 import { isComparisonOperator } from '../../../../promql/utils';
 import { Table, Alert } from 'react-bootstrap';
+import { vectorElemBinop } from '../../../../promql/binOp';
 
 interface VectorScalarBinaryExprExplainViewProps {
   node: BinaryExpr;

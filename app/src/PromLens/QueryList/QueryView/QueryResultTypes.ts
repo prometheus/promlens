@@ -2,6 +2,8 @@ export interface Metric {
   [key: string]: string;
 }
 
+export type Labels = Metric;
+
 export type QueryResult =
   | {
       resultType: 'vector';
