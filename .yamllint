@@ -22,3 +22,6 @@ rules:
   truthy:
     ignore: |
       .github/workflows/*.yml
+
+ignore:
+  /app/node_modules
