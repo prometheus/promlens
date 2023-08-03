@@ -147,6 +147,7 @@ const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
         // - command-line default
         // - page state from shared link
         // - explicit "?s=<server-url>" override
+        // - explicit "?ds=<datasource-id>" override
 
         // If a command-line default server is present, set that first.
         if (pageConfig.defaultPrometheusURL !== '') {
@@ -178,8 +179,7 @@ const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
           }
         }
 
-        // Override Prometheus server from URL.
-        // TODO: Allow passing datasource ID in URL as well.
+        // Override Prometheus server from URL for direct access.
         if (queryParams.s) {
           store.dispatch(
             setServerSettings({
@@ -191,6 +191,16 @@ const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
           );
         }
 
+        // Override Prometheus server from URL for proxy access.
+        if (queryParams.ds) {
+          const providedDS = pageConfig.grafanaDatasources.find((ds) => ds.id === Number(queryParams.ds));
+          if (providedDS !== undefined) {
+            store.dispatch(setServerSettings(grafanaDatasourceToServerSettings(providedDS)));
+          } else {
+            setPageConfigError('No Grafana datasource found with ID provided in the url parameter');
+          }
+        }
+
         // Override the expression of the first query from the URL.
         if (queryParams.q) {
           store.dispatch(setExpr(0, queryParams.q));
@@ -200,7 +210,7 @@ const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
       })
       .catch((err) => setPageConfigError(err.message))
       .finally(() => setPageConfigLoading(false));
-  }, [queryParams.l, queryParams.s, pathPrefix]);
+  }, [queryParams.l, queryParams.s, queryParams.ds, pathPrefix]);
 
   return (
     <Container fluid className="promlens-container">
