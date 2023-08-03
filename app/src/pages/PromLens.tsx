@@ -191,16 +191,14 @@ const PromLens: FC<PathPrefixProps> = ({ pathPrefix }) => {
           );
         }
 
-        // Override Prometheus server from URL for proxy access
+        // Override Prometheus server from URL for proxy access.
         if (queryParams.ds) {
-          store.dispatch(
-            setServerSettings({
-              access: 'proxy',
-              datasourceID: Number(queryParams.ds),
-              withCredentials: false,
-              url: '',
-            })
-          );
+          const providedDS = pageConfig.grafanaDatasources.find((ds) => ds.id === Number(queryParams.ds));
+          if (providedDS !== undefined) {
+            store.dispatch(setServerSettings(grafanaDatasourceToServerSettings(providedDS)));
+          } else {
+            setPageConfigError('No Grafana datasource found with ID provided in the url parameter');
+          }
         }
 
         // Override the expression of the first query from the URL.

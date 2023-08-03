@@ -167,7 +167,7 @@ To create an API token suitable for looking up datasources in Grafana:
 
 ### Set Grafana datasource in URL
 
-You can pre-select a specific grafana datasource when the page loads by appending a `ds` query parameter to the PromLens URL. For example, https://promlens.com/?ds=1. This works along with the `q` query parameter and shared links. You can find the IDs of the datasources by visiting `<promLenURL>/api/page_config`.
+You can pre-select a specific Grafana datasource when the page loads by appending a `ds` query parameter to the PromLens URL. For example, https://promlens.com/?ds=1. This works along with the `q` query parameter and shared links. You can find the IDs of the datasources by visiting `<PromLenURL>/api/page_config`.
 
 ### Direct links to queries
 
