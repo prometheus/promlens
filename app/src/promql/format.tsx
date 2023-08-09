@@ -214,7 +214,7 @@ const formatNodeInternal = (node: ASTNode, showChildren: boolean, maxDepth?: num
       return (
         <>
           {showChildren && formatNode(maybeParenthesizeBinopChild(node.op, node.lhs), showChildren, childMaxDepth)}{' '}
-          {['and', 'or', 'unless'].includes(node.op) ? (
+          {['atan2', 'and', 'or', 'unless'].includes(node.op) ? (
             <span className="promql-keyword">{node.op}</span>
           ) : (
             <span className="promql-operator">{node.op}</span>

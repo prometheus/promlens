@@ -31,6 +31,7 @@ const binOpPrecedence = {
   [binaryOperatorType.and]: 5,
   [binaryOperatorType.or]: 6,
   [binaryOperatorType.unless]: 5,
+  [binaryOperatorType.atan2]: 2,
 };
 
 export const maybeParenthesizeBinopChild = (op: binaryOperatorType, child: ASTNode): ASTNode => {

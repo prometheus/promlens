@@ -26,6 +26,8 @@ export const scalarBinOp = (op: binaryOperatorType, lhs: number, rhs: number): n
       return Number(lhs >= rhs);
     case '<=':
       return Number(lhs <= rhs);
+    case 'atan2':
+      return Math.atan2(lhs, rhs);
     default:
       throw new Error('invalid binop');
   }
@@ -57,6 +59,8 @@ export const vectorElemBinop = (op: binaryOperatorType, lhs: number, rhs: number
       return { value: lhs, keep: lhs >= rhs };
     case '<=':
       return { value: lhs, keep: lhs <= rhs };
+    case 'atan2':
+      return { value: Math.atan2(lhs, rhs), keep: true };
     default:
       throw new Error('invalid binop');
   }
