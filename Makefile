@@ -54,5 +54,8 @@ clean:
 	rm -rf ./app/build
 	rm ./app/embed.go
 
+.PHONY: lint
+lint: build common-lint
+
 .PHONY: build
 build: build-ui assets-compress npm_licenses common-build
