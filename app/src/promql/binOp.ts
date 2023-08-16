@@ -251,6 +251,9 @@ export const computeVectorVectorBinOp = (
   const groups: BinOpMatchGroups = {};
   const sigf = signatureFunc(matching.on, matching.labels);
 
+  // While we only use this set to compute a count of limited groups in the end, we can encounter each
+  // group multiple times (since multiple series can map to the same group). So we need to use a set
+  // to track which groups we've already counted.
   const outOfLimitGroups = new Set<string>();
 
   // Add all RHS samples to the grouping map.
