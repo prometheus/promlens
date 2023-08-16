@@ -1,12 +1,80 @@
-import React, { FC, CSSProperties, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { BinaryExpr, vectorMatchCardinality } from '../../../../promql/ast';
-import { InstantSample } from '../../../QueryList/QueryView/QueryResultTypes';
+import { InstantSample, Labels } from '../../../QueryList/QueryView/QueryResultTypes';
 import SeriesName from '../../../../utils/SeriesName';
-import { vectorElemBinop } from './computeBinop';
-import { parsePrometheusFloat, formatPrometheusFloat } from '../../../../utils/utils';
 import { labelNameList } from '../../../../utils/LabelNameList';
 import { isComparisonOperator, isSetOperator } from '../../../../promql/utils';
-import { Alert, Table, Form } from 'react-bootstrap';
+import { Alert, Button, Card, Form } from 'react-bootstrap';
+import { useLocalStorage } from '../../../../hooks/useLocalStorage';
+import {
+  VectorMatchError,
+  BinOpMatchGroup,
+  MatchErrorType,
+  computeVectorVectorBinOp,
+  filteredSampleValue,
+} from '../../../../promql/binOp';
+import { formatNode } from '../../../../promql/format';
+import { AiOutlineWarning } from 'react-icons/ai';
+
+// We use this color pool for two purposes:
+//
+// 1. To distinguish different match groups from each other.
+// 2. To distinguish multiple series within one match group from each other.
+const colorPool = [
+  '#1f77b4',
+  '#ff7f0e',
+  '#2ca02c',
+  '#d62728',
+  '#9467bd',
+  '#8c564b',
+  '#e377c2',
+  '#7f7f7f',
+  '#bcbd22',
+  '#17becf',
+  '#393b79',
+  '#637939',
+  '#8c6d31',
+  '#843c39',
+  '#d6616b',
+  '#7b4173',
+  '#ce6dbd',
+  '#9c9ede',
+  '#c5b0d5',
+  '#c49c94',
+  '#f7b6d2',
+  '#c7c7c7',
+  '#dbdb8d',
+  '#9edae5',
+  '#393b79',
+  '#637939',
+  '#8c6d31',
+  '#843c39',
+  '#d6616b',
+  '#7b4173',
+  '#ce6dbd',
+  '#9c9ede',
+  '#c5b0d5',
+  '#c49c94',
+  '#f7b6d2',
+  '#c7c7c7',
+  '#dbdb8d',
+  '#9edae5',
+  '#17becf',
+  '#393b79',
+  '#637939',
+  '#8c6d31',
+  '#843c39',
+  '#d6616b',
+  '#7b4173',
+  '#ce6dbd',
+  '#9c9ede',
+  '#c5b0d5',
+  '#c49c94',
+  '#f7b6d2',
+];
+
+const rhsColorOffset = colorPool.length / 2 + 3;
+const colorForIndex = (idx: number, offset?: number) => `${colorPool[(idx + (offset || 0)) % colorPool.length]}80`;
 
 interface VectorVectorBinaryExprExplainViewProps {
   node: BinaryExpr;
@@ -14,37 +82,14 @@ interface VectorVectorBinaryExprExplainViewProps {
   rhs: InstantSample[];
 }
 
-type Labels = Record<string, string>;
-
-const matchLabels = (metric: Labels, on: boolean, labels: string[]): Labels => {
+const noMatchLabels = (metric: Labels, on: boolean, labels: string[]): Labels => {
   const result: Labels = {};
   for (const name in metric) {
-    if (labels.includes(name) === on && (on || name !== '__name__')) {
+    if (!(labels.includes(name) === on && (on || name !== '__name__'))) {
       result[name] = metric[name];
     }
   }
   return result;
-};
-
-const signatureFunc = (on: boolean, names: string[]) => {
-  // TODO: Make sure this is something collision-safe as a separator in JS strings.
-  const sep = '\xff';
-  names.sort();
-
-  if (on) {
-    return (lset: Labels): string => {
-      // TODO: Perf: Use numeric hash?
-      return names.map((ln: string) => lset[ln]).join(sep);
-    };
-  }
-
-  return (lset: Labels): string => {
-    // TODO: Perf: Use numeric hash?
-    return Object.keys(lset)
-      .filter((k) => !names.includes(k) && k !== '__name__')
-      .map((k) => lset[k])
-      .join(sep);
-  };
 };
 
 const explanationText = (node: BinaryExpr): React.ReactNode => {
@@ -117,187 +162,115 @@ const explanationText = (node: BinaryExpr): React.ReactNode => {
   );
 };
 
+const explainError = (binOp: BinaryExpr, mg: BinOpMatchGroup, err: VectorMatchError) => {
+  const fixes = (
+    <>
+      <p>
+        <strong>Possible fixes:</strong>
+      </p>
+      <ul>
+        {err.type === MatchErrorType.multipleMatchesForOneToOneMatching && (
+          <li>
+            <p>
+              <strong>Allow {err.dupeSide === 'left' ? 'many-to-one' : 'one-to-many'} matching</strong>: If you want to allow{' '}
+              {err.dupeSide === 'left' ? 'many-to-one' : 'one-to-many'} matching, you need to explicitly request it by adding
+              a <span className="promql-code promql-keyword">group_{err.dupeSide}()</span> modifier to the operator:
+            </p>
+            <p className="text-center">
+              {formatNode(
+                {
+                  ...binOp,
+                  matching: {
+                    ...(binOp.matching ? binOp.matching : { labels: [], on: false, include: [] }),
+                    card: err.dupeSide === 'left' ? vectorMatchCardinality.manyToOne : vectorMatchCardinality.oneToMany,
+                  },
+                },
+                true,
+                1
+              )}
+            </p>
+          </li>
+        )}
+        <li>
+          <strong>Update your matching parameters:</strong> Consider including more differentiating labels in your matching
+          modifiers (via <span className="promql-code promql-keyword">on()</span> /{' '}
+          <span className="promql-code promql-keyword">ignoring()</span>) to split multiple series into distinct match
+          groups.
+        </li>
+        <li>
+          <strong>Aggregate the input:</strong> Consider aggregating away the extra labels that create multiple series per
+          group before applying the binary operation.
+        </li>
+      </ul>
+    </>
+  );
+
+  switch (err.type) {
+    case MatchErrorType.multipleMatchesForOneToOneMatching:
+      return (
+        <>
+          <p>
+            Binary operators only allow <strong>one-to-one</strong> matching by default, but we found{' '}
+            <strong>multiple series on the {err.dupeSide} side</strong> for this match group.
+          </p>
+          {fixes}
+        </>
+      );
+    case MatchErrorType.multipleMatchesOnBothSides:
+      return (
+        <>
+          <p>
+            We found <strong>multiple series on both sides</strong> for this match group. Since{' '}
+            <strong>many-to-many matching</strong> is not supported, you need to ensure that at least one of the sides only
+            yields a single series.
+          </p>
+          {fixes}
+        </>
+      );
+    case MatchErrorType.multipleMatchesOnOneSide:
+      const [oneSide, manySide] =
+        binOp.matching!.card === vectorMatchCardinality.oneToMany ? ['left', 'right'] : ['right', 'left'];
+      return (
+        <>
+          <p>
+            You requested <strong>{oneSide === 'right' ? 'many-to-one' : 'one-to-many'} matching</strong> via{' '}
+            <span className="promql-code promql-keyword">group_{manySide}()</span>, but we also found{' '}
+            <strong>multiple series on the {oneSide} side</strong> of the match group. Make sure that the {oneSide} side only
+            contains a single series.
+          </p>
+          {fixes}
+        </>
+      );
+    default:
+      throw new Error('unknown match error');
+  }
+};
+
 const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewProps> = ({ node, lhs, rhs }) => {
-  const [allowLineBreaks, setAllowLineBreaks] = useState(false);
+  const [allowLineBreaks, setAllowLineBreaks] = useLocalStorage<boolean>(
+    'promlens.explain.binary-operators.break-long-lines',
+    true
+  );
+
+  const [showSampleValues, setShowSampleValues] = useLocalStorage<boolean>(
+    'promlens.explain.binary-operators.show-sample-values',
+    false
+  );
+
+  const [maxGroups, setMaxGroups] = useState<number | undefined>(100);
+  const [maxSeriesPerGroup, setMaxSeriesPerGroup] = useState<number | undefined>(100);
 
   const { matching } = node;
   if (matching === null) {
     // The parent should make sure to only pass in vector-vector binops that have their "matching" field filled out.
     throw new Error('missing matching parameters in vector-to-vector binop');
   }
-  const sigf = signatureFunc(matching.on, matching.labels);
 
-  // For the simplifcation of further calculations, we assume that the "one" side of a one-to-many
-  // match is always on the right-hand side of the binop and swap otherwise to ensure this.
-  const [lhsVec, rhsVec] = matching.card === vectorMatchCardinality.oneToMany ? [rhs, lhs] : [lhs, rhs];
-
-  const rightSigs: {
-    [k: string]: {
-      rhs: InstantSample;
-      lhs: InstantSample[]; // All the LHS samples matched with this RHS sample.
-    };
-  } = {};
-
-  // const groupColors = [
-  //   'rgb(255, 240, 214)',
-  //   'rgb(188, 255, 199)',
-  //   'rgb(255, 214, 250)',
-  //   'rgb(214, 255, 253)',
-  //   'rgb(199, 255, 224)',
-  // ];
-
-  const groupColors = ['#edc24030', '#afd8f830', '#cb4b4b30', '#4da74d30', '#9440ed30'];
-
-  const styleLabel = (idx: number) => {
-    return (label: string): CSSProperties => {
-      return matching.on === matching.labels.includes(label) && (matching.on || label !== '__name__')
-        ? { backgroundColor: '#edf3ff', fontStyle: 'italic' }
-        : { backgroundColor: groupColors[idx % groupColors.length] };
-    };
-  };
-
-  let matchErr: React.ReactNode | null = null;
-  rhsVec.forEach((rs) => {
-    const sig = sigf(rs.metric);
-    if (sig in rightSigs) {
-      const [oneSide, manySide] = matching.card === vectorMatchCardinality.oneToMany ? ['left', 'right'] : ['right', 'left'];
-      matchErr = (
-        <>
-          <Alert variant="danger">
-            <strong>Error:</strong> Found more than one series for a match group on the {oneSide}-hand side.
-          </Alert>
-          <Alert variant="secondary">
-            <p>
-              When requesting a {matching.card} operation via{' '}
-              <span className="promql-code promql-keyword">group_{manySide}()</span>, you need to ensure that the series on
-              the {oneSide}-hand side are still unique when only keeping the chosen matching labels, as PromQL does not allow
-              many-to-many matching.
-            </p>
-            <p>
-              The following match group (generated from the matching labels applied to series from the {oneSide}-hand side):
-            </p>
-            <ul>
-              <li>
-                <SeriesName
-                  labels={matchLabels(rs.metric, matching.on, matching.labels)}
-                  format={true}
-                  styleLabel={styleLabel(0)}
-                />
-              </li>
-            </ul>
-            <p>...matches multiple series on the {oneSide}-hand-side ("one" side) of the operation:</p>
-            <ul>
-              {/* TODO: The margin is needed for highlighted backgrounds to not overlap with the next <li> item. Find better way? */}
-              <li style={{ marginBottom: 5 }}>
-                <SeriesName labels={rs.metric} format={true} styleLabel={styleLabel(0)} />
-              </li>
-              <li>
-                <SeriesName labels={rightSigs[sig].rhs.metric} format={true} styleLabel={styleLabel(1)} />
-              </li>
-            </ul>
-            <p>
-              <strong>Possible fixes:</strong>
-            </p>
-            <ul>
-              <li>
-                Consider including more differentiating labels in your matching modifiers (via{' '}
-                <span className="promql-code promql-keyword">on()</span> /{' '}
-                <span className="promql-code promql-keyword">ignoring()</span>).
-              </li>{' '}
-              <li>
-                Consider aggregating away extra (non-matching) dimensions on the {oneSide}-hand-side before applying the
-                binary operation to collapse multiple matching series into one.
-              </li>
-              <li>
-                Consider whether you are using the correct grouping modifier. Perhaps you need to change{' '}
-                <span className="promql-code promql-keyword">group_{oneSide}()</span> to{' '}
-                <span className="promql-code promql-keyword">group_{manySide}()</span>? The mentioned side in the modifier
-                must point to the side with more dimensions.
-              </li>
-            </ul>
-          </Alert>
-        </>
-      );
-    }
-    rightSigs[sig] = { rhs: rs, lhs: [] };
+  const { groups: matchGroups, numGroups } = computeVectorVectorBinOp(node.op, matching, node.bool, lhs, rhs, {
+    maxGroups: maxGroups,
+    maxSeriesPerGroup: maxSeriesPerGroup,
   });
-
-  if (matchErr !== null) {
-    return matchErr;
-  }
-
-  const matchedSigs: { [lhsSig: string]: Set<string> | null } = {};
-
-  // LHS-side series that haven't found a match on the RHS.
-  const unmatchedLHS: InstantSample[] = [];
-
-  lhsVec.forEach((ls) => {
-    const sig = sigf(ls.metric);
-    if (!(sig in rightSigs)) {
-      unmatchedLHS.push(ls);
-      return;
-    }
-
-    if (matching.card === vectorMatchCardinality.oneToOne) {
-      if (sig in matchedSigs) {
-        matchErr = (
-          <>
-            multiple matches for labels: many-to-one matching must be explicit (
-            <span className="promql-code promql-keyword">group_left()</span> /{' '}
-            <span className="promql-code promql-keyword">group_right()</span>)
-          </>
-        );
-      } else {
-        matchedSigs[sig] = null;
-      }
-    } else {
-      // TODO: The PromQL engine has more duplicate case checking here, but not sure if this can ever actually happen.
-    }
-
-    rightSigs[sig].lhs.push(ls);
-  });
-
-  if (matchErr !== null) {
-    return <Alert variant="danger">{matchErr}</Alert>;
-  }
-
-  const unmatchedRow = (series: InstantSample, swap: boolean) => {
-    const seriesCols = (
-      <>
-        <td>
-          <SeriesName labels={series.metric} format={true} styleLabel={styleLabel(0)} />
-        </td>
-        <td>{series.value[1]}</td>
-      </>
-    );
-
-    const unmatchedCols = (
-      <>
-        <td className="number-cell" style={{ color: '#a31515' }}>
-          no match
-        </td>
-        <td className="number-cell" style={{ color: '#a31515' }}>
-          no value
-        </td>
-      </>
-    );
-
-    const [leftCols, rightCols] = swap ? [unmatchedCols, seriesCols] : [seriesCols, unmatchedCols];
-
-    return (
-      <tbody>
-        <tr>
-          {leftCols}
-          <td className="op-cell">{node.op}</td>
-          {rightCols}
-          <td className="op-cell">=</td>
-          <td className="number-cell" style={{ color: 'grey' }}>
-            dropped
-          </td>
-        </tr>
-      </tbody>
-    );
-  };
+  const errCount = Object.values(matchGroups).filter((mg) => mg.error).length;
 
   return (
     <>
@@ -305,162 +278,219 @@ const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewPro
         {explanationText(node)}
       </Alert>
 
-      {/* <Table size="sm" className={`data-table vector-vector-table`}>
-        <thead>
-          <tr>
-            <th colSpan={3}>{formatNode(node.lhs)}</th>
-            <th>{formatNode(node, 1)}</th>
-            <th colSpan={3}>{formatNode(node.rhs)}</th>
-          </tr>
-          <tr>
-            <th>instance</th>
-            <th>mode</th>
-            <th>...</th>
-            <th></th>
-            <th>instance</th>
-            <th>mode</th>
-            <th>...</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>localhost:10000</td>
-            <td>idle</td>
-            <td></td>
-            <td className="op-cell">{node.op}</td>
-            <td>localhost:10000</td>
-            <td>idle</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>localhost:10001</td>
-            <td>idle</td>
-            <td></td>
-            <td className="op-cell">{node.op}</td>
-            <td>localhost:10001</td>
-            <td>idle</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>localhost:10000</td>
-            <td>user</td>
-            <td></td>
-            <td className="op-cell">{node.op}</td>
-            <td>localhost:10000</td>
-            <td>user</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </Table> */}
       {!isSetOperator(node.op) && (
         <>
-          <Form.Check
-            custom
-            className="ml-2"
-            type="checkbox"
-            id="allow-linebreaks"
-            onChange={() => setAllowLineBreaks(!allowLineBreaks)}
-            defaultChecked={allowLineBreaks}
-            label="Break long lines"
-          />
-          <Table bordered size="sm" className={`data-table vector-vector-table${allowLineBreaks ? '' : ' table-nobreak'}`}>
-            <thead>
-              <tr>
-                <th>Left labels</th>
-                <th>Left value</th>
-                <th>Operator</th>
-                <th>Right labels</th>
-                <th>Right value</th>
-                <th></th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            {Object.keys(rightSigs).map((rs) => {
-              const rhs = rightSigs[rs].rhs;
-              const numMatches = rightSigs[rs].lhs.length;
-              const rhsCols = (
-                <>
-                  <td rowSpan={0}>
-                    <SeriesName labels={rhs.metric} format={true} styleLabel={styleLabel(0)} />
-                  </td>
-                  <td className="number-cell" rowSpan={numMatches}>
-                    {rhs.value[1]}
-                  </td>
-                </>
-              );
+          <Form inline>
+            <Form.Check
+              custom
+              className="ml-2"
+              type="checkbox"
+              id="allow-linebreaks"
+              onChange={() => setAllowLineBreaks(!allowLineBreaks)}
+              defaultChecked={allowLineBreaks}
+              label="Break long lines"
+              style={{ marginBottom: 20 }}
+            />
+            <Form.Check
+              custom
+              className="ml-2"
+              type="checkbox"
+              id="show-sample-values"
+              onChange={() => setShowSampleValues(!showSampleValues)}
+              defaultChecked={showSampleValues}
+              label="Show sample values"
+              style={{ marginBottom: 20 }}
+            />
+          </Form>
 
-              // "one" side has no matches.
-              if (numMatches === 0) {
-                return unmatchedRow(rhs, matching.card === vectorMatchCardinality.oneToMany ? false : true);
-              }
+          {numGroups > Object.keys(matchGroups).length && (
+            <Alert variant="warning" className="mb-4">
+              Too many match groups to display, only showing {Object.keys(matchGroups).length} out of {numGroups} groups.
+              <Button variant="warning" className="mx-3" onClick={() => setMaxGroups(undefined)}>
+                Show all groups
+              </Button>
+            </Alert>
+          )}
 
-              return (
-                <tbody key={rs}>
-                  {rightSigs[rs].lhs.map((lhs, idx) => {
-                    const numMatches = rightSigs[rs].lhs.length;
-                    const rhs = rightSigs[rs].rhs;
+          {errCount > 0 && (
+            <Alert variant="warning" className="mb-4">
+              Found matching issues in {errCount} match group{errCount > 1 ? 's' : ''}. See below for per-group error
+              details.
+            </Alert>
+          )}
 
-                    const [vl, vr] =
-                      matching.card !== vectorMatchCardinality.oneToMany
-                        ? [lhs.value[1], rhs.value[1]]
-                        : [rhs.value[1], lhs.value[1]];
-                    let { value, keep } = vectorElemBinop(node.op, parsePrometheusFloat(vl), parsePrometheusFloat(vr));
-                    if (node.bool) {
-                      value = keep ? 1.0 : 0.0;
-                    }
+          <table className={`binop-table${allowLineBreaks ? '' : ' table-nobreak'}`}>
+            <tbody>
+              {Object.values(matchGroups).map((mg, mgIdx) => {
+                const { groupLabels, lhs, lhsCount, rhs, rhsCount, result, error } = mg;
 
-                    const lhsCols = (
-                      <>
-                        <td>
-                          <SeriesName labels={lhs.metric} format={true} styleLabel={styleLabel(idx)} />
-                        </td>
-                        <td className="number-cell">
-                          <span
-                            className="highlighted-text"
-                            style={{ backgroundColor: groupColors[idx % groupColors.length] }}
-                          >
-                            {lhs.value[1]}
-                          </span>
-                        </td>
-                      </>
-                    );
+                const noLHSMatches = lhs.length === 0;
+                const noRHSMatches = rhs.length === 0;
 
-                    const condRHSCols = idx === 0 && rhsCols;
+                const groupColor = colorPool[mgIdx % colorPool.length];
+                const noMatchesColor = '#e0e0e0';
+                const lhsGroupColor = noLHSMatches ? noMatchesColor : groupColor;
+                const rhsGroupColor = noRHSMatches ? noMatchesColor : groupColor;
+                const resultGroupColor = noLHSMatches || noRHSMatches ? noMatchesColor : groupColor;
 
-                    const [leftCols, rightCols] =
-                      matching.card !== vectorMatchCardinality.oneToMany ? [lhsCols, condRHSCols] : [condRHSCols, lhsCols];
+                const matchGroupTitleRow = (color: string) => (
+                  <tr className="group-title-row">
+                    <td colSpan={2} style={{ backgroundColor: `${color}25` }}>
+                      <SeriesName labels={groupLabels} format={true} />
+                    </td>
+                  </tr>
+                );
 
-                    return (
-                      <tr key={idx}>
-                        {leftCols}
-                        {idx === 0 && (
-                          <td rowSpan={numMatches} className="op-cell">
-                            {node.op}
-                            {node.bool && ' bool'}
-                          </td>
+                const matchGroupTable = (
+                  series: InstantSample[],
+                  seriesCount: number,
+                  color: string,
+                  colorOffset?: number
+                ) => (
+                  <div className="match-group-table-wrapper" style={{ border: `2px solid ${color}` }}>
+                    <table className="binop-group-table">
+                      <tbody>
+                        {series.length === 0 ? (
+                          <tr>
+                            <td className="notice-cell">no matching series</td>
+                          </tr>
+                        ) : (
+                          <>
+                            {matchGroupTitleRow(color)}
+                            {series.map((s, sIdx) => {
+                              return (
+                                <tr key={sIdx} className="series-row">
+                                  <td>
+                                    <div
+                                      className="series-swatch"
+                                      style={{
+                                        backgroundColor: colorForIndex(sIdx, colorOffset),
+                                      }}
+                                    ></div>
+
+                                    <SeriesName
+                                      labels={noMatchLabels(s.metric, matching.on, matching.labels)}
+                                      format={true}
+                                    />
+                                  </td>
+                                  {showSampleValues && <td className="number-cell">{s.value[1]}</td>}
+                                </tr>
+                              );
+                            })}
+                          </>
                         )}
-                        {rightCols}
-                        <td className="op-cell">=</td>
-                        <td className="number-cell">
-                          {keep || node.bool ? (
-                            <span style={{ backgroundColor: groupColors[idx % groupColors.length] }}>
-                              {formatPrometheusFloat(value)}
-                            </span>
-                          ) : (
-                            <span style={{ color: 'grey' }}>dropped</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              );
-            })}
+                        {seriesCount > series.length && (
+                          <tr>
+                            <td className="notice-cell">
+                              {seriesCount - series.length} more series omitted –
+                              <Button size="sm" variant="link" onClick={() => setMaxSeriesPerGroup(undefined)}>
+                                show all
+                              </Button>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                );
 
-            {unmatchedLHS.map((lhs) => {
-              return unmatchedRow(lhs, matching.card === vectorMatchCardinality.oneToMany ? true : false);
-            })}
-          </Table>
+                const lhsTable = matchGroupTable(lhs, lhsCount, lhsGroupColor);
+                const rhsTable = matchGroupTable(rhs, rhsCount, rhsGroupColor, rhsColorOffset);
+
+                const resultTable = (
+                  <div className="match-group-table-wrapper" style={{ border: `2px solid ${resultGroupColor}` }}>
+                    <table className="binop-group-table">
+                      <tbody>
+                        {noLHSMatches || noRHSMatches ? (
+                          <tr>
+                            <td className="notice-cell">dropped</td>
+                          </tr>
+                        ) : error !== null ? (
+                          <tr>
+                            <td className="notice-cell">error, result omitted</td>
+                          </tr>
+                        ) : (
+                          <>
+                            {result.map(({ sample, manySideIdx }, resIdx) => {
+                              const filtered = sample.value[1] === filteredSampleValue;
+                              const [lIdx, rIdx] =
+                                matching.card === vectorMatchCardinality.oneToMany ? [0, manySideIdx] : [manySideIdx, 0];
+
+                              return (
+                                <tr key={resIdx} className="series-row">
+                                  <td
+                                    style={{ opacity: filtered ? 0.5 : 1 }}
+                                    title={filtered ? 'Series has been filtered by comparison operator' : undefined}
+                                  >
+                                    <div
+                                      className="series-swatch"
+                                      style={{
+                                        backgroundColor: colorForIndex(lIdx),
+                                        marginRight: 0,
+                                      }}
+                                    ></div>
+                                    <span style={{ color: '#aaa' }}>–</span>
+                                    <div
+                                      className="series-swatch"
+                                      style={{
+                                        backgroundColor: colorForIndex(rIdx, rhsColorOffset),
+                                      }}
+                                    ></div>
+                                    <SeriesName labels={sample.metric} format={true} />
+                                  </td>
+                                  {showSampleValues && (
+                                    <td className="number-cell">
+                                      {filtered ? (
+                                        <span style={{ color: 'grey' }}>filtered</span>
+                                      ) : (
+                                        <span>{sample.value[1]}</span>
+                                      )}
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })}
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+
+                return (
+                  <React.Fragment key={mgIdx}>
+                    {mgIdx !== 0 && <tr style={{ height: 30 }}></tr>}
+                    <tr>
+                      <td colSpan={5}>
+                        {error && (
+                          <>
+                            <Card className={mgIdx === 0 ? 'mb-4' : 'my-4'} style={{ maxWidth: 1000, margin: 'auto' }}>
+                              <Card.Header style={{ color: '#721c24', backgroundColor: '#f8d7da', borderColor: '#f5c6cb' }}>
+                                <strong>
+                                  <AiOutlineWarning style={{ marginBottom: 3 }} /> Error for match group below:
+                                </strong>
+                              </Card.Header>
+                              <Card.Body>{explainError(node, mg, error)}</Card.Body>
+                            </Card>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                    <tr className="match-group-row">
+                      <td className="match-group-cell">{lhsTable}</td>
+                      <td className="op-cell">
+                        {node.op}
+                        {node.bool && ' bool'}
+                      </td>
+                      <td className="match-group-cell">{rhsTable}</td>
+                      <td className="op-cell">=</td>
+                      <td className="match-group-cell">{resultTable}</td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </>
       )}
     </>

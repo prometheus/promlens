@@ -2,8 +2,8 @@ import React, { FC } from 'react';
 import { BinaryExpr } from '../../../../promql/ast';
 import { SampleValue } from '../../../QueryList/QueryView/QueryResultTypes';
 import { parsePrometheusFloat, formatPrometheusFloat } from '../../../../utils/utils';
-import { scalarBinOp } from './computeBinop';
 import { Table } from 'react-bootstrap';
+import { scalarBinOp } from '../../../../promql/binOp';
 
 interface ScalarScalarBinaryExprExplainViewProps {
   node: BinaryExpr;
