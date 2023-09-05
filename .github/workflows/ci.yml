@@ -10,7 +10,7 @@ jobs:
     # Whenever the Go version is updated here, .promu.yml
     # should also be updated.
     container:
-      image: quay.io/prometheus/golang-builder:1.19-base
+      image: quay.io/prometheus/golang-builder:1.21-base
     steps:
       - uses: actions/checkout@v3
       - uses: prometheus/promci@v0.0.2
@@ -68,11 +68,11 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: '<1.19'
+          go-version: '>=1.21 <1.22'
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.2.0
+        uses: golangci/golangci-lint-action@v3.7.0
         with:
-          version: v1.49.0
+          version: v1.54.2
 
   publish_main:
     name: Publish main branch artifacts
