@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	cloud.google.com/go/storage v1.28.1
+	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/glebarez/go-sqlite v1.21.1
 	github.com/go-kit/log v0.2.1
 	github.com/go-sql-driver/mysql v1.7.1
@@ -17,7 +18,6 @@ require (
 	github.com/prometheus/prometheus v0.41.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	golang.org/x/net v0.14.0
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
 require (
@@ -25,8 +25,6 @@ require (
 	cloud.google.com/go/compute v1.13.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.2 // indirect
 	cloud.google.com/go/iam v0.8.0 // indirect
-	github.com/alecthomas/kingpin/v2 v2.3.2 // indirect
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/aws/aws-sdk-go v1.44.159 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
