@@ -20,8 +20,4 @@ rules:
       config/testdata/section_key_dup.bad.yml
   line-length: disable
   truthy:
-    ignore: |
-      .github/workflows/*.yml
-
-ignore:
-  /app/node_modules
+    check-keys: false
