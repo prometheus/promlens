@@ -21,6 +21,16 @@ then
   export CYPRESS_CACHE_FOLDER=${npm_config_cache}/cypress_cache
 fi
 
+node_version="$(node --version)"
+node_version="${node_version%%.*}" # v22.9.0 -> v22
+node_version="${node_version:1}" # v22 -> 22
+if [[ $node_version > 16 ]]; then
+    echo "Detected node version greater than 16"
+    echo "Exporting 'NODE_OPTIONS=--openssl-legacy-provider'"
+    echo "https://github.com/prometheus/promlens?tab=readme-ov-file#building-from-source"
+    export NODE_OPTIONS=--openssl-legacy-provider
+fi
+
 cd app
 npm i
 npm run build
