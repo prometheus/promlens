@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -75,7 +76,7 @@ type GCSSharer struct {
 func NewGCSSharer(bucket string) (*GCSSharer, error) {
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("error creating GCS client: %v", err)
+		return nil, fmt.Errorf("error creating GCS client: %w", err)
 	}
 	return &GCSSharer{
 		bucket: bucket,
@@ -89,10 +90,10 @@ func (s GCSSharer) CreateLink(name string, pageState string) error {
 
 	wc := s.client.Bucket(s.bucket).Object(name).NewWriter(ctx)
 	if _, err := wc.Write([]byte(pageState)); err != nil {
-		return fmt.Errorf("error writing GCS object: %v", err)
+		return fmt.Errorf("error writing GCS object: %w", err)
 	}
 	if err := wc.Close(); err != nil {
-		return fmt.Errorf("error closing GCS object writer: %v", err)
+		return fmt.Errorf("error closing GCS object writer: %w", err)
 	}
 	return nil
 }
@@ -110,14 +111,14 @@ func (s GCSSharer) GetLink(name string) (pageState string, err error) {
 
 	rc, err := s.client.Bucket(s.bucket).Object(name).NewReader(ctx)
 	if err != nil {
-		return "", fmt.Errorf("error creating GCS bucket reader: %v", err)
+		return "", fmt.Errorf("error creating GCS bucket reader: %w", err)
 	}
 	ps, err := io.ReadAll(rc)
 	if err != nil {
-		return "", fmt.Errorf("error reading GCS object: %v", err)
+		return "", fmt.Errorf("error reading GCS object: %w", err)
 	}
 	if err := rc.Close(); err != nil {
-		return "", fmt.Errorf("error closing GCS object reader: %v", err)
+		return "", fmt.Errorf("error closing GCS object reader: %w", err)
 	}
 	return string(ps), nil
 }
@@ -136,7 +137,7 @@ type SQLSharer struct {
 func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables bool, retention time.Duration) (*SQLSharer, error) {
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to %q database: %v", driver, err)
+		return nil, fmt.Errorf("error connecting to %q database: %w", driver, err)
 	}
 
 	switch driver {
@@ -154,7 +155,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 			page_state TEXT
 		)`)
 			if err != nil {
-				return nil, fmt.Errorf("error creating link table: %v", err)
+				return nil, fmt.Errorf("error creating link table: %w", err)
 			}
 			_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS view(
@@ -165,7 +166,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %v", err)
+				return nil, fmt.Errorf("Error creating view table: %w", err)
 			}
 		}
 	case "postgres":
@@ -182,7 +183,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 			page_state TEXT
 		)`)
 			if err != nil {
-				return nil, fmt.Errorf("error creating link table: %v", err)
+				return nil, fmt.Errorf("error creating link table: %w", err)
 			}
 			_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS view(
@@ -193,13 +194,13 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %v", err)
+				return nil, fmt.Errorf("Error creating view table: %w", err)
 			}
 		}
 	case "sqlite":
 		_, err := db.Exec("PRAGMA foreign_keys = ON")
 		if err != nil {
-			return nil, fmt.Errorf("error enabling foreign key support: %v", err)
+			return nil, fmt.Errorf("error enabling foreign key support: %w", err)
 		}
 
 		if createTables {
@@ -211,7 +212,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 			page_state TEXT
 		)`)
 			if err != nil {
-				return nil, fmt.Errorf("error creating link table: %v", err)
+				return nil, fmt.Errorf("error creating link table: %w", err)
 			}
 			_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS view(
@@ -222,7 +223,7 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %v", err)
+				return nil, fmt.Errorf("Error creating view table: %w", err)
 			}
 		}
 	default:
@@ -294,7 +295,7 @@ func (s SQLSharer) Close() {
 func (s SQLSharer) CreateLink(name string, pageState string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
-		return fmt.Errorf("error beginning transaction: %v", err)
+		return fmt.Errorf("error beginning transaction: %w", err)
 	}
 	id := 0
 	var query string
@@ -312,10 +313,10 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 		return nil
 	}
 
-	if err != sql.ErrNoRows {
+	if !errors.Is(err, sql.ErrNoRows) {
 		// TODO: Check rollback errors.
 		_ = tx.Rollback()
-		return fmt.Errorf("error checking for link existence: %v", err)
+		return fmt.Errorf("error checking for link existence: %w", err)
 	}
 	if s.driver == "postgres" {
 		query = "INSERT INTO link(short_name, page_state) values($1, $2)"
@@ -326,7 +327,7 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 	if err != nil {
 		// TODO: Check rollback errors.
 		_ = tx.Rollback()
-		return fmt.Errorf("error inserting new link: %v", err)
+		return fmt.Errorf("error inserting new link: %w", err)
 	}
 	_ = tx.Commit()
 
@@ -348,7 +349,7 @@ func (s SQLSharer) GetLink(name string) (pageState string, err error) {
 	}
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
-		return "", fmt.Errorf("error preparing statement: %v", err)
+		return "", fmt.Errorf("error preparing statement: %w", err)
 	}
 	defer stmt.Close()
 
@@ -366,7 +367,7 @@ func (s SQLSharer) GetLink(name string) (pageState string, err error) {
 	}
 	_, err = s.db.Exec(query, id)
 	if err != nil {
-		return "", fmt.Errorf("error inserting view: %v", err)
+		return "", fmt.Errorf("error inserting view: %w", err)
 	}
 
 	return pageState, nil
