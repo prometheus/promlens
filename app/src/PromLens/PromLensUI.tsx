@@ -89,7 +89,7 @@ const PromLens: FC<PromLensUIStateProps & PromLensUIOwnProps & PathPrefixProps> 
           <strong className="mr-auto">First time here?</strong>
         </Toast.Header>
         <Toast.Body>
-          Check out an <a href="./?example">example page</a> with multiple queries or take a{' '}
+          Check out an <a href="/?example">example page</a> with multiple queries or take a{' '}
           <a href="https://promlens.com/">feature tour</a>.
         </Toast.Body>
       </Toast>
