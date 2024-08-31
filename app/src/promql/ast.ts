@@ -25,6 +25,8 @@ export enum aggregationType {
   bottomk = 'bottomk',
   topk = 'topk',
   quantile = 'quantile',
+  limitK = 'limitk',
+  limitRatio = 'limit_ratio',
 }
 
 export enum binaryOperatorType {

@@ -146,11 +146,14 @@ export const childDescription = (node: ASTNode, idx: number): string => {
         switch (node.op) {
           case 'topk':
           case 'bottomk':
+          case 'limitk':
             return 'k';
           case 'quantile':
             return 'quantile';
           case 'count_values':
             return 'target label name';
+          case 'limit_ratio':
+            return 'ratio';
         }
       }
 
@@ -176,7 +179,7 @@ export const childDescription = (node: ASTNode, idx: number): string => {
   }
 };
 
-export const aggregatorsWithParam = ['topk', 'bottomk', 'quantile', 'count_values'];
+export const aggregatorsWithParam = ['topk', 'bottomk', 'quantile', 'count_values', 'limitk', 'limit_ratio'];
 
 export const anyValueType = [valueType.scalar, valueType.string, valueType.matrix, valueType.vector];
 

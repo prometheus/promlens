@@ -57,6 +57,7 @@ func main() {
 				"stdvar_over_time",
 				"last_over_time",
 				"present_over_time",
+				"mad_over_time",
 			} {
 				funcDocs[fn] = currentDocs
 			}

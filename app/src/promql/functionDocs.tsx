@@ -11,8 +11,8 @@ const funcDocs: Record<string, React.ReactNode> = {
   absent: (
     <>
       <p>
-        <code>absent(v instant-vector)</code> returns an empty vector if the vector passed to it has any elements and a
-        1-element vector with the value 1 if the vector passed to it has no elements.
+        <code>absent(v instant-vector)</code> returns an empty vector if the vector passed to it has any elements (floats or
+        native histograms) and a 1-element vector with the value 1 if the vector passed to it has no elements.
       </p>
 
       <p>This is useful for alerting on when no time series exist for a given metric name and label combination.</p>
@@ -36,7 +36,8 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         <code>absent_over_time(v range-vector)</code> returns an empty vector if the range vector passed to it has any
-        elements and a 1-element vector with the value 1 if the range vector passed to it has no elements.
+        elements (floats or native histograms) and a 1-element vector with the value 1 if the range vector passed to it has
+        no elements.
       </p>
 
       <p>
@@ -124,6 +125,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -190,6 +194,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         </li>
         <li>
           <code>pi()</code>: returns pi.
+        </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
         </li>
       </ul>
     </>
@@ -258,6 +265,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -324,6 +334,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         </li>
         <li>
           <code>pi()</code>: returns pi.
+        </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
         </li>
       </ul>
     </>
@@ -392,6 +405,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -459,6 +475,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -498,7 +517,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -506,8 +525,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -515,8 +551,23 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         <code>ceil(v instant-vector)</code> rounds the sample values of all elements in <code>v</code> up to the nearest
-        integer.
+        integer value greater than or equal to v.
       </p>
+
+      <ul>
+        <li>
+          <code>ceil(+Inf) = +Inf</code>
+        </li>
+        <li>
+          <code>ceil(±0) = ±0</code>
+        </li>
+        <li>
+          <code>ceil(1.49) = 2.0</code>
+        </li>
+        <li>
+          <code>ceil(1.78) = 2.0</code>
+        </li>
+      </ul>
     </>
   ),
   changes: (
@@ -535,10 +586,16 @@ const funcDocs: Record<string, React.ReactNode> = {
         limit of <code>max</code>.
       </p>
 
-      <p>
-        Special cases: - Return an empty vector if <code>min &gt; max</code>- Return <code>NaN</code> if <code>min</code> or{' '}
-        <code>max</code> is <code>NaN</code>
-      </p>
+      <p>Special cases:</p>
+
+      <ul>
+        <li>
+          Return an empty vector if <code>min &gt; max</code>
+        </li>
+        <li>
+          Return <code>NaN</code> if <code>min</code> or <code>max</code> is <code>NaN</code>
+        </li>
+      </ul>
     </>
   ),
   clamp_max: (
@@ -621,6 +678,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -688,6 +748,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -727,7 +790,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -735,8 +798,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -753,6 +833,14 @@ const funcDocs: Record<string, React.ReactNode> = {
       <p>
         <code>day_of_week(v=vector(time()) instant-vector)</code> returns the day of the week for each of the given times in
         UTC. Returned values are from 0 to 6, where 0 means Sunday etc.
+      </p>
+    </>
+  ),
+  day_of_year: (
+    <>
+      <p>
+        <code>day_of_year(v=vector(time()) instant-vector)</code> returns the day of the year for each of the given times in
+        UTC. Returned values are from 1 to 365 for non-leap years, and 1 to 366 in leap years.
       </p>
     </>
   ),
@@ -828,6 +916,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -849,7 +940,15 @@ const funcDocs: Record<string, React.ReactNode> = {
       </pre>
 
       <p>
-        <code>delta</code> should only be used with gauges.
+        <code>delta</code> acts on native histograms by calculating a new histogram where each component (sum and count of
+        observations, buckets) is the difference between the respective component in the first and last native histogram in
+        <code>v</code>. However, each element in <code>v</code> that contains a mix of float and native histogram samples
+        within the range, will be missing from the result vector.
+      </p>
+
+      <p>
+        <code>delta</code> should only be used with gauges and native histograms where the components behave like gauges
+        (so-called gauge histograms).
       </p>
     </>
   ),
@@ -858,6 +957,8 @@ const funcDocs: Record<string, React.ReactNode> = {
       <p>
         <code>deriv(v range-vector)</code> calculates the per-second derivative of the time series in a range vector{' '}
         <code>v</code>, using <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">simple linear regression</a>.
+        The range vector must have at least two samples in order to perform the calculation. When <code>+Inf</code> or
+        <code>-Inf</code> are found in the range vector, the slope and offset value calculated will be <code>NaN</code>.
       </p>
 
       <p>
@@ -886,21 +987,164 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         <code>floor(v instant-vector)</code> rounds the sample values of all elements in <code>v</code> down to the nearest
-        integer.
+        integer value smaller than or equal to v.
+      </p>
+
+      <ul>
+        <li>
+          <code>floor(+Inf) = +Inf</code>
+        </li>
+        <li>
+          <code>floor(±0) = ±0</code>
+        </li>
+        <li>
+          <code>floor(1.49) = 1.0</code>
+        </li>
+        <li>
+          <code>floor(1.78) = 1.0</code>
+        </li>
+      </ul>
+    </>
+  ),
+  histogram_avg: (
+    <>
+      <p>
+        <em>
+          This function only acts on native histograms, which are an experimental feature. The behavior of this function may
+          change in future versions of Prometheus, including its removal from PromQL.
+        </em>
+      </p>
+
+      <p>
+        <code>histogram_avg(v instant-vector)</code> returns the arithmetic average of observed values stored in a native
+        histogram. Samples that are not native histograms are ignored and do not show up in the returned vector.
+      </p>
+
+      <p>
+        Use <code>histogram_avg</code> as demonstrated below to compute the average request duration over a 5-minute window
+        from a native histogram:
+      </p>
+
+      <pre>
+        <code>histogram_avg(rate(http_request_duration_seconds[5m]))</code>
+      </pre>
+
+      <p>Which is equivalent to the following query:</p>
+
+      <pre>
+        <code>
+          {' '}
+          histogram_sum(rate(http_request_duration_seconds[5m])) / histogram_count(rate(http_request_duration_seconds[5m]))
+        </code>
+      </pre>
+    </>
+  ),
+  'histogram_count()` and `histogram_sum': (
+    <>
+      <p>
+        <em>
+          Both functions only act on native histograms, which are an experimental feature. The behavior of these functions
+          may change in future versions of Prometheus, including their removal from PromQL.
+        </em>
+      </p>
+
+      <p>
+        <code>histogram_count(v instant-vector)</code> returns the count of observations stored in a native histogram.
+        Samples that are not native histograms are ignored and do not show up in the returned vector.
+      </p>
+
+      <p>
+        Similarly, <code>histogram_sum(v instant-vector)</code> returns the sum of observations stored in a native histogram.
+      </p>
+
+      <p>
+        Use <code>histogram_count</code> in the following way to calculate a rate of observations (in this case corresponding
+        to “requests per second”) from a native histogram:
+      </p>
+
+      <pre>
+        <code>histogram_count(rate(http_request_duration_seconds[10m]))</code>
+      </pre>
+    </>
+  ),
+  histogram_fraction: (
+    <>
+      <p>
+        <em>
+          This function only acts on native histograms, which are an experimental feature. The behavior of this function may
+          change in future versions of Prometheus, including its removal from PromQL.
+        </em>
+      </p>
+
+      <p>
+        For a native histogram, <code>histogram_fraction(lower scalar, upper scalar, v instant-vector)</code> returns the
+        estimated fraction of observations between the provided lower and upper values. Samples that are not native
+        histograms are ignored and do not show up in the returned vector.
+      </p>
+
+      <p>
+        For example, the following expression calculates the fraction of HTTP requests over the last hour that took 200ms or
+        less:
+      </p>
+
+      <pre>
+        <code>histogram_fraction(0, 0.2, rate(http_request_duration_seconds[1h]))</code>
+      </pre>
+
+      <p>
+        The error of the estimation depends on the resolution of the underlying native histogram and how closely the provided
+        boundaries are aligned with the bucket boundaries in the histogram.
+      </p>
+
+      <p>
+        <code>+Inf</code> and <code>-Inf</code> are valid boundary values. For example, if the histogram in the expression
+        above included negative observations (which shouldn&rsquo;t be the case for request durations), the appropriate lower
+        boundary to include all observations less than or equal 0.2 would be <code>-Inf</code> rather than <code>0</code>.
+      </p>
+
+      <p>
+        Whether the provided boundaries are inclusive or exclusive is only relevant if the provided boundaries are precisely
+        aligned with bucket boundaries in the underlying native histogram. In this case, the behavior depends on the schema
+        definition of the histogram. The currently supported schemas all feature inclusive upper boundaries and exclusive
+        lower boundaries for positive values (and vice versa for negative values). Without a precise alignment of boundaries,
+        the function uses linear interpolation to estimate the fraction. With the resulting uncertainty, it becomes
+        irrelevant if the boundaries are inclusive or exclusive.
       </p>
     </>
   ),
   histogram_quantile: (
     <>
       <p>
-        <code>histogram_quantile(φ scalar, b instant-vector)</code> calculates the φ-quantile (0 ≤ φ ≤ 1) from the buckets{' '}
-        <code>b</code> of a<a href="https://prometheus.io/docs/concepts/metric_types/#histogram">histogram</a>. (See
-        <a href="https://prometheus.io/docs/practices/histograms">histograms and summaries</a> for a detailed explanation of
-        φ-quantiles and the usage of the histogram metric type in general.) The samples in <code>b</code> are the counts of
-        observations in each bucket. Each sample must have a label <code>le</code> where the label value denotes the
-        inclusive upper bound of the bucket. (Samples without such a label are silently ignored.) The{' '}
+        <code>histogram_quantile(φ scalar, b instant-vector)</code> calculates the φ-quantile (0 ≤ φ ≤ 1) from a{' '}
+        <a href="https://prometheus.io/docs/concepts/metric_types/#histogram">classic histogram</a> or from a native
+        histogram. (See <a href="https://prometheus.io/docs/practices/histograms">histograms and summaries</a> for a detailed
+        explanation of φ-quantiles and the usage of the (classic) histogram metric type in general.)
+      </p>
+
+      <p>
+        <em>
+          Note that native histograms are an experimental feature. The behavior of this function when dealing with native
+          histograms may change in future versions of Prometheus.
+        </em>
+      </p>
+
+      <p>
+        The float samples in <code>b</code> are considered the counts of observations in each bucket of one or more classic
+        histograms. Each float sample must have a label
+        <code>le</code> where the label value denotes the inclusive upper bound of the bucket. (Float samples without such a
+        label are silently ignored.) The other labels and the metric name are used to identify the buckets belonging to each
+        classic histogram. The{' '}
         <a href="https://prometheus.io/docs/concepts/metric_types/#histogram">histogram metric type</a>
         automatically provides time series with the <code>_bucket</code> suffix and the appropriate labels.
+      </p>
+
+      <p>
+        The native histogram samples in <code>b</code> are treated each individually as a separate histogram to calculate the
+        quantile from.
+      </p>
+
+      <p>
+        As long as no naming collisions arise, <code>b</code> may contain a mix of classic and native histograms.
       </p>
 
       <p>
@@ -908,28 +1152,43 @@ const funcDocs: Record<string, React.ReactNode> = {
       </p>
 
       <p>
-        Example: A histogram metric is called <code>http_request_duration_seconds</code>. To calculate the 90th percentile of
-        request durations over the last 10m, use the following expression:
+        Example: A histogram metric is called <code>http_request_duration_seconds</code> (and therefore the metric name for
+        the buckets of a classic histogram is
+        <code>http_request_duration_seconds_bucket</code>). To calculate the 90th percentile of request durations over the
+        last 10m, use the following expression in case
+        <code>http_request_duration_seconds</code> is a classic histogram:
       </p>
 
       <pre>
         <code>histogram_quantile(0.9, rate(http_request_duration_seconds_bucket[10m]))</code>
       </pre>
 
+      <p>For a native histogram, use the following expression instead:</p>
+
+      <pre>
+        <code>histogram_quantile(0.9, rate(http_request_duration_seconds[10m]))</code>
+      </pre>
+
       <p>
         The quantile is calculated for each label combination in
         <code>http_request_duration_seconds</code>. To aggregate, use the <code>sum()</code> aggregator around the{' '}
         <code>rate()</code> function. Since the <code>le</code> label is required by
-        <code>histogram_quantile()</code>, it has to be included in the <code>by</code> clause. The following expression
-        aggregates the 90th percentile by <code>job</code>:
+        <code>histogram_quantile()</code> to deal with classic histograms, it has to be included in the <code>by</code>{' '}
+        clause. The following expression aggregates the 90th percentile by <code>job</code> for classic histograms:
       </p>
 
       <pre>
         <code>histogram_quantile(0.9, sum by (job, le) (rate(http_request_duration_seconds_bucket[10m])))</code>
       </pre>
 
+      <p>When aggregating native histograms, the expression simplifies to:</p>
+
+      <pre>
+        <code>histogram_quantile(0.9, sum by (job) (rate(http_request_duration_seconds[10m])))</code>
+      </pre>
+
       <p>
-        To aggregate everything, specify only the <code>le</code> label:
+        To aggregate all classic histograms, specify only the <code>le</code> label:
       </p>
 
       <pre>
@@ -937,19 +1196,84 @@ const funcDocs: Record<string, React.ReactNode> = {
       </pre>
 
       <p>
+        With native histograms, aggregating everything works as usual without any <code>by</code> clause:
+      </p>
+
+      <pre>
+        <code>histogram_quantile(0.9, sum(rate(http_request_duration_seconds[10m])))</code>
+      </pre>
+
+      <p>
         The <code>histogram_quantile()</code> function interpolates quantile values by assuming a linear distribution within
-        a bucket. The highest bucket must have an upper bound of <code>+Inf</code>. (Otherwise, <code>NaN</code> is
-        returned.) If a quantile is located in the highest bucket, the upper bound of the second highest bucket is returned.
-        A lower limit of the lowest bucket is assumed to be 0 if the upper bound of that bucket is greater than 0. In that
-        case, the usual linear interpolation is applied within that bucket. Otherwise, the upper bound of the lowest bucket
-        is returned for quantiles located in the lowest bucket.
+        a bucket.
       </p>
 
       <p>
-        If <code>b</code> has 0 observations, <code>NaN</code> is returned. If <code>b</code> contains fewer than two
-        buckets,
-        <code>NaN</code> is returned. For φ &lt; 0, <code>-Inf</code> is returned. For φ &gt; 1, <code>+Inf</code> is
-        returned.
+        If <code>b</code> has 0 observations, <code>NaN</code> is returned. For φ &lt; 0, <code>-Inf</code> is returned. For
+        φ &gt; 1, <code>+Inf</code> is returned. For φ = <code>NaN</code>, <code>NaN</code> is returned.
+      </p>
+
+      <p>
+        The following is only relevant for classic histograms: If <code>b</code> contains fewer than two buckets,{' '}
+        <code>NaN</code> is returned. The highest bucket must have an upper bound of <code>+Inf</code>. (Otherwise,{' '}
+        <code>NaN</code> is returned.) If a quantile is located in the highest bucket, the upper bound of the second highest
+        bucket is returned. A lower limit of the lowest bucket is assumed to be 0 if the upper bound of that bucket is
+        greater than 0. In that case, the usual linear interpolation is applied within that bucket. Otherwise, the upper
+        bound of the lowest bucket is returned for quantiles located in the lowest bucket.
+      </p>
+
+      <p>
+        You can use <code>histogram_quantile(0, v instant-vector)</code> to get the estimated minimum value stored in a
+        histogram.
+      </p>
+
+      <p>
+        You can use <code>histogram_quantile(1, v instant-vector)</code> to get the estimated maximum value stored in a
+        histogram.
+      </p>
+
+      <p>Buckets of classic histograms are cumulative. Therefore, the following should always be the case:</p>
+
+      <ul>
+        <li>The counts in the buckets are monotonically increasing (strictly non-decreasing).</li>
+        <li>
+          A lack of observations between the upper limits of two consecutive buckets results in equal counts in those two
+          buckets.
+        </li>
+      </ul>
+
+      <p>
+        However, floating point precision issues (e.g. small discrepancies introduced by computing of buckets with{' '}
+        <code>sum(rate(...))</code>) or invalid data might violate these assumptions. In that case,
+        <code>histogram_quantile</code> would be unable to return meaningful results. To mitigate the issue,
+        <code>histogram_quantile</code> assumes that tiny relative differences between consecutive buckets are happening
+        because of floating point precision errors and ignores them. (The threshold to ignore a difference between two
+        buckets is a trillionth (1e-12) of the sum of both buckets.) Furthermore, if there are non-monotonic bucket counts
+        even after this adjustment, they are increased to the value of the previous buckets to enforce monotonicity. The
+        latter is evidence for an actual issue with the input data and is therefore flagged with an informational annotation
+        reading <code>input to histogram_quantile needed to be fixed for monotonicity</code>. If you encounter this
+        annotation, you should find and remove the source of the invalid data.
+      </p>
+    </>
+  ),
+  'histogram_stddev()` and `histogram_stdvar': (
+    <>
+      <p>
+        <em>
+          Both functions only act on native histograms, which are an experimental feature. The behavior of these functions
+          may change in future versions of Prometheus, including their removal from PromQL.
+        </em>
+      </p>
+
+      <p>
+        <code>histogram_stddev(v instant-vector)</code> returns the estimated standard deviation of observations in a native
+        histogram, based on the geometric mean of the buckets where the observations lie. Samples that are not native
+        histograms are ignored and do not show up in the returned vector.
+      </p>
+
+      <p>
+        Similarly, <code>histogram_stdvar(v instant-vector)</code> returns the estimated standard variance of observations in
+        a native histogram.
       </p>
     </>
   ),
@@ -1008,9 +1332,17 @@ const funcDocs: Record<string, React.ReactNode> = {
       </pre>
 
       <p>
-        <code>increase</code> should only be used with counters. It is syntactic sugar for <code>rate(v)</code> multiplied by
-        the number of seconds under the specified time range window, and should be used primarily for human readability. Use{' '}
-        <code>rate</code> in recording rules so that increases are tracked consistently on a per-second basis.
+        <code>increase</code> acts on native histograms by calculating a new histogram where each component (sum and count of
+        observations, buckets) is the increase between the respective component in the first and last native histogram in
+        <code>v</code>. However, each element in <code>v</code> that contains a mix of float and native histogram samples
+        within the range, will be missing from the result vector.
+      </p>
+
+      <p>
+        <code>increase</code> should only be used with counters and native histograms where the components behave like
+        counters. It is syntactic sugar for <code>rate(v)</code> multiplied by the number of seconds under the specified time
+        range window, and should be used primarily for human readability. Use <code>rate</code> in recording rules so that
+        increases are tracked consistently on a per-second basis.
       </p>
     </>
   ),
@@ -1060,6 +1392,10 @@ const funcDocs: Record<string, React.ReactNode> = {
       </p>
 
       <p>
+        <code>label_join</code> acts on float and histogram samples in the same way.
+      </p>
+
+      <p>
         This example will return a vector with each time series having a <code>foo</code> label with the value{' '}
         <code>a,b,c</code> added to it:
       </p>
@@ -1077,11 +1413,16 @@ const funcDocs: Record<string, React.ReactNode> = {
       <p>
         For each timeseries in <code>v</code>,{' '}
         <code>label_replace(v instant-vector, dst_label string, replacement string, src_label string, regex string)</code>
-        matches the regular expression <code>regex</code> against the value of the label <code>src_label</code>. If it
-        matches, the value of the label <code>dst_label</code> in the returned timeseries will be the expansion of{' '}
-        <code>replacement</code>, together with the original labels in the input. Capturing groups in the regular expression
-        can be referenced with <code>$1</code>, <code>$2</code>, etc. If the regular expression doesn&rsquo;t match then the
-        timeseries is returned unchanged.
+        matches the <a href="https://github.com/google/re2/wiki/Syntax">regular expression</a> <code>regex</code> against the
+        value of the label <code>src_label</code>. If it matches, the value of the label <code>dst_label</code> in the
+        returned timeseries will be the expansion of <code>replacement</code>, together with the original labels in the
+        input. Capturing groups in the regular expression can be referenced with <code>$1</code>, <code>$2</code>, etc. Named
+        capturing groups in the regular expression can be referenced with <code>$name</code> (where <code>name</code> is the
+        capturing group name). If the regular expression doesn&rsquo;t match then the timeseries is returned unchanged.
+      </p>
+
+      <p>
+        <code>label_replace</code> acts on float and histogram samples in the same way.
       </p>
 
       <p>
@@ -1093,6 +1434,15 @@ const funcDocs: Record<string, React.ReactNode> = {
         <code>
           label_replace(up{'{'}job=&quot;api-server&quot;,service=&quot;a:c&quot;{'}'}, &quot;foo&quot;, &quot;$1&quot;,
           &quot;service&quot;, &quot;(.*):.*&quot;)
+        </code>
+      </pre>
+
+      <p>This second example has the same effect than the first example, and illustrates use of named capturing groups:</p>
+
+      <pre>
+        <code>
+          label_replace(up{'{'}job=&quot;api-server&quot;,service=&quot;a:c&quot;{'}'}, &quot;foo&quot;, &quot;$name&quot;,
+          &quot;service&quot;, &quot;(?P&lt;name&gt;.*):(?P&lt;version&gt;.*)&quot;)
         </code>
       </pre>
     </>
@@ -1133,7 +1483,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1141,8 +1491,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1185,6 +1552,72 @@ const funcDocs: Record<string, React.ReactNode> = {
       </p>
     </>
   ),
+  mad_over_time: (
+    <>
+      <p>
+        The following functions allow aggregating each series of a given range vector over time and return an instant vector
+        with per-series aggregation results:
+      </p>
+
+      <ul>
+        <li>
+          <code>avg_over_time(range-vector)</code>: the average value of all points in the specified interval.
+        </li>
+        <li>
+          <code>min_over_time(range-vector)</code>: the minimum value of all points in the specified interval.
+        </li>
+        <li>
+          <code>max_over_time(range-vector)</code>: the maximum value of all points in the specified interval.
+        </li>
+        <li>
+          <code>sum_over_time(range-vector)</code>: the sum of all values in the specified interval.
+        </li>
+        <li>
+          <code>count_over_time(range-vector)</code>: the count of all values in the specified interval.
+        </li>
+        <li>
+          <code>quantile_over_time(scalar, range-vector)</code>: the φ-quantile (0 ≤ φ ≤ 1) of the values in the specified
+          interval.
+        </li>
+        <li>
+          <code>stddev_over_time(range-vector)</code>: the population standard deviation of the values in the specified
+          interval.
+        </li>
+        <li>
+          <code>stdvar_over_time(range-vector)</code>: the population standard variance of the values in the specified
+          interval.
+        </li>
+        <li>
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
+        </li>
+        <li>
+          <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
+        </li>
+      </ul>
+
+      <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
+        Note that all values in the specified interval have the same weight in the aggregation even if the values are not
+        equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
+      </p>
+    </>
+  ),
   max_over_time: (
     <>
       <p>
@@ -1221,7 +1654,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1229,8 +1662,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1270,7 +1720,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1278,8 +1728,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1363,6 +1830,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -1371,7 +1841,9 @@ const funcDocs: Record<string, React.ReactNode> = {
       <p>
         <code>predict_linear(v range-vector, t scalar)</code> predicts the value of time series
         <code>t</code> seconds from now, based on the range vector <code>v</code>, using{' '}
-        <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">simple linear regression</a>.
+        <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">simple linear regression</a>. The range vector must
+        have at least two samples in order to perform the calculation. When <code>+Inf</code> or <code>-Inf</code> are found
+        in the range vector, the slope and offset value calculated will be <code>NaN</code>.
       </p>
 
       <p>
@@ -1415,7 +1887,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1423,8 +1895,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1464,7 +1953,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1472,8 +1961,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1541,6 +2047,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -1565,8 +2074,16 @@ const funcDocs: Record<string, React.ReactNode> = {
       </pre>
 
       <p>
-        <code>rate</code> should only be used with counters. It is best suited for alerting, and for graphing of slow-moving
-        counters.
+        <code>rate</code> acts on native histograms by calculating a new histogram where each component (sum and count of
+        observations, buckets) is the rate of increase between the respective component in the first and last native
+        histogram in
+        <code>v</code>. However, each element in <code>v</code> that contains a mix of float and native histogram samples
+        within the range, will be missing from the result vector.
+      </p>
+
+      <p>
+        <code>rate</code> should only be used with counters and native histograms where the components behave like counters.
+        It is best suited for alerting, and for graphing of slow-moving counters.
       </p>
 
       <p>
@@ -1580,12 +2097,22 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         For each input time series, <code>resets(v range-vector)</code> returns the number of counter resets within the
-        provided time range as an instant vector. Any decrease in the value between two consecutive samples is interpreted as
-        a counter reset.
+        provided time range as an instant vector. Any decrease in the value between two consecutive float samples is
+        interpreted as a counter reset. A reset in a native histogram is detected in a more complex way: Any decrease in any
+        bucket, including the zero bucket, or in the count of observation constitutes a counter reset, but also the
+        disappearance of any previously populated bucket, an increase in bucket resolution, or a decrease of the zero-bucket
+        width.
       </p>
 
       <p>
-        <code>resets</code> should only be used with counters.
+        <code>resets</code> should only be used with counters and counter-like native histograms.
+      </p>
+
+      <p>
+        If the range vector contains a mix of float and histogram samples for the same series, counter resets are detected
+        separately and their numbers added up. The change from a float to a histogram sample is <em>not</em> considered a
+        counter reset. Each float sample is compared to the next float sample, and each histogram is comprared to the next
+        histogram.
       </p>
     </>
   ),
@@ -1679,6 +2206,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -1746,13 +2276,71 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
   sort: (
     <>
       <p>
-        <code>sort(v instant-vector)</code> returns vector elements sorted by their sample values, in ascending order.
+        <code>sort(v instant-vector)</code> returns vector elements sorted by their sample values, in ascending order. Native
+        histograms are sorted by their sum of observations.
+      </p>
+
+      <p>
+        Please note that <code>sort</code> only affects the results of instant queries, as range query results always have a
+        fixed output ordering.
+      </p>
+    </>
+  ),
+  sort_by_label: (
+    <>
+      <p>
+        <strong>
+          This function has to be enabled via the{' '}
+          <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>{' '}
+          <code>--enable-feature=promql-experimental-functions</code>.
+        </strong>
+      </p>
+
+      <p>
+        <code>sort_by_label(v instant-vector, label string, ...)</code> returns vector elements sorted by the values of the
+        given labels in ascending order. In case these label values are equal, elements are sorted by their full label sets.
+      </p>
+
+      <p>
+        Please note that the sort by label functions only affect the results of instant queries, as range query results
+        always have a fixed output ordering.
+      </p>
+
+      <p>
+        This function uses <a href="https://en.wikipedia.org/wiki/Natural_sort_order">natural sort order</a>.
+      </p>
+    </>
+  ),
+  sort_by_label_desc: (
+    <>
+      <p>
+        <strong>
+          This function has to be enabled via the{' '}
+          <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>{' '}
+          <code>--enable-feature=promql-experimental-functions</code>.
+        </strong>
+      </p>
+
+      <p>
+        Same as <code>sort_by_label</code>, but sorts in descending order.
+      </p>
+
+      <p>
+        Please note that the sort by label functions only affect the results of instant queries, as range query results
+        always have a fixed output ordering.
+      </p>
+
+      <p>
+        This function uses <a href="https://en.wikipedia.org/wiki/Natural_sort_order">natural sort order</a>.
       </p>
     </>
   ),
@@ -1760,6 +2348,11 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         Same as <code>sort</code>, but sorts in descending order.
+      </p>
+
+      <p>
+        Like <code>sort</code>, <code>sort_desc</code> only affects the results of instant queries, as range query results
+        always have a fixed output ordering.
       </p>
     </>
   ),
@@ -1806,7 +2399,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1814,8 +2407,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1855,7 +2465,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1863,8 +2473,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1904,7 +2531,7 @@ const funcDocs: Record<string, React.ReactNode> = {
           interval.
         </li>
         <li>
-          <code>last_over_time(range-vector)</code>: the most recent point value in specified interval.
+          <code>last_over_time(range-vector)</code>: the most recent point value in the specified interval.
         </li>
         <li>
           <code>present_over_time(range-vector)</code>: the value 1 for any series in the specified interval.
@@ -1912,8 +2539,25 @@ const funcDocs: Record<string, React.ReactNode> = {
       </ul>
 
       <p>
+        If the <a href="../feature_flags.md#experimental-promql-functions">feature flag</a>
+        <code>--enable-feature=promql-experimental-functions</code> is set, the following additional functions are available:
+      </p>
+
+      <ul>
+        <li>
+          <code>mad_over_time(range-vector)</code>: the median absolute deviation of all points in the specified interval.
+        </li>
+      </ul>
+
+      <p>
         Note that all values in the specified interval have the same weight in the aggregation even if the values are not
         equally spaced throughout the interval.
+      </p>
+
+      <p>
+        <code>avg_over_time</code>, <code>sum_over_time</code>, <code>count_over_time</code>, <code>last_over_time</code>,
+        and
+        <code>present_over_time</code> handle native histograms as expected. All other functions ignore histogram samples.
       </p>
     </>
   ),
@@ -1980,6 +2624,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         </li>
         <li>
           <code>pi()</code>: returns pi.
+        </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
         </li>
       </ul>
     </>
@@ -2048,6 +2695,9 @@ const funcDocs: Record<string, React.ReactNode> = {
         <li>
           <code>pi()</code>: returns pi.
         </li>
+        <li>
+          <code>rad(v instant-vector)</code>: converts degrees to radians for all elements in <code>v</code>.
+        </li>
       </ul>
     </>
   ),
@@ -2063,11 +2713,7 @@ const funcDocs: Record<string, React.ReactNode> = {
     <>
       <p>
         <code>timestamp(v instant-vector)</code> returns the timestamp of each of the samples of the given vector as the
-        number of seconds since January 1, 1970 UTC.
-      </p>
-
-      <p>
-        <em>This function was added in Prometheus 2.0</em>
+        number of seconds since January 1, 1970 UTC. It also works with histogram samples.
       </p>
     </>
   ),

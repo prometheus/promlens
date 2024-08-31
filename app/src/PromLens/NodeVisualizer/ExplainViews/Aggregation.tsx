@@ -49,6 +49,11 @@ const describeAggregationType = (aggrType: aggregationType, param: ASTNode | nul
         }th percentile) over the sample values of the input series`;
       }
       return 'calculates a quantile over the sample values of the input series';
+
+    case 'limitk':
+      return 'limits the output to K series';
+    case 'limit_ratio':
+      return 'limits the output to a ratio of the input series';
     default:
       throw new Error(`invalid aggregation type ${aggrType}`);
   }
