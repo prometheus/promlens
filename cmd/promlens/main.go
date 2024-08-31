@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/pkg/errors"
@@ -29,7 +30,7 @@ import (
 	promlogflag "github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web/kingpinflag"
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/prometheus/prometheus/promql/parser"
 
 	"github.com/prometheus/promlens/pkg/grafana"
 	"github.com/prometheus/promlens/pkg/sharer"
@@ -166,6 +167,10 @@ func main() {
 	promlogflag.AddFlags(app, &logCfg)
 
 	toolkitConfig := kingpinflag.AddFlags(app, ":8080")
+
+	// Always enable experimental functions from the PromLens UI point of view. If the backend does not support them,
+	// the query will simply fail and report that the --enable-feature=promql-experimental-functions flag needs to be set.
+	parser.EnableExperimentalFunctions = true
 
 	_, err := app.Parse(os.Args[1:])
 	if err != nil {

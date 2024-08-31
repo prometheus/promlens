@@ -16,10 +16,13 @@ const AggregationEditor: FC<AggregationEditorProps> = ({ node, onUpdate }) => {
 
   const changeOp = (newOp: aggregationType) => {
     let param: ASTNode | null = null;
-    // Keeping the param argument only makes sense when switching between bottomk/topk.
-    if (['topk', 'bottomk'].includes(node.op) && ['topk', 'bottomk'].includes(newOp)) {
+
+    // Keeping the param argument only makes sense when switching between bottomk/topk/limitk.
+    const kOps = ['topk', 'bottomk', 'limitk'];
+    if (kOps.includes(node.op) && kOps.includes(newOp)) {
       param = node.param;
     }
+
     if (!aggregatorsWithParam.includes(node.op) && aggregatorsWithParam.includes(newOp)) {
       param = { type: nodeType.placeholder, children: [] };
     }
