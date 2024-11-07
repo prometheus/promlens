@@ -80,7 +80,7 @@ func singleJoiningSlash(a, b string) string {
 func NewBackend(grafanaURL string, authToken string) (*Backend, error) {
 	target, err := url.Parse(grafanaURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid Grafana URL: %v", err)
+		return nil, fmt.Errorf("invalid Grafana URL: %w", err)
 	}
 
 	return &Backend{
@@ -116,7 +116,7 @@ func (b *Backend) GetDatasources() (dsSettings []DatasourceSettings, err error) 
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "GET", singleJoiningSlash(b.url, "/api/datasources"), nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+b.authToken)
@@ -124,7 +124,7 @@ func (b *Backend) GetDatasources() (dsSettings []DatasourceSettings, err error) 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching datasources: %v", err)
+		return nil, fmt.Errorf("error fetching datasources: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -134,7 +134,7 @@ func (b *Backend) GetDatasources() (dsSettings []DatasourceSettings, err error) 
 
 	var ds []DatasourceSettings
 	if err = json.NewDecoder(resp.Body).Decode(&ds); err != nil {
-		return nil, fmt.Errorf("error unmarshaling datasources: %v", err)
+		return nil, fmt.Errorf("error unmarshaling datasources: %w", err)
 	}
 
 	promDS := make([]DatasourceSettings, 0, len(ds))

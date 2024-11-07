@@ -14,6 +14,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -24,7 +25,6 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"github.com/pkg/errors"
 	"github.com/prometheus/common/promlog"
 	promlogflag "github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
@@ -95,12 +95,12 @@ func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN
 
 	if sqlDSN != "" {
 		if sqlDriver != "mysql" && sqlDriver != "sqlite" && sqlDriver != "postgres" {
-			return nil, errors.Errorf("unsupported SQL driver %q, supported values are 'mysql', 'postgres' and 'sqlite'", sqlDriver)
+			return nil, fmt.Errorf("unsupported SQL driver %q, supported values are 'mysql', 'postgres' and 'sqlite'", sqlDriver)
 		}
 
 		s, err := sharer.NewSQLSharer(logger, sqlDriver, sqlDSN, createTables, sqlRetention)
 		if err != nil {
-			return nil, errors.Wrap(err, "error creating SQL link sharer")
+			return nil, fmt.Errorf("error creating SQL link sharer: %w", err)
 		}
 
 		return s, nil
@@ -108,7 +108,7 @@ func getLinkSharer(logger log.Logger, gcsBucket string, sqlDriver string, sqlDSN
 
 	s, err := sharer.NewGCSSharer(gcsBucket)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating GCS link sharer")
+		return nil, fmt.Errorf("error creating GCS link sharer: %w", err)
 	}
 	return s, nil
 }
@@ -129,7 +129,7 @@ func getGrafanaBackend(url string, token string, tokenFile string) (*grafana.Bac
 	if tokenFile != "" {
 		tokenBuf, err := os.ReadFile(tokenFile)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error reading Grafana API token file %q", tokenFile)
+			return nil, fmt.Errorf("error reading Grafana API token file %q: %w", tokenFile, err)
 		}
 		token = strings.TrimSpace(string(tokenBuf))
 	}
@@ -169,7 +169,7 @@ func main() {
 
 	_, err := app.Parse(os.Args[1:])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, errors.Wrapf(err, "error parsing commandline arguments"))
+		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing commandline arguments: %w", err))
 		app.Usage(os.Args[1:])
 		os.Exit(2)
 	}
