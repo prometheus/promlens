@@ -22,12 +22,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 
 	// Load SQL drivers.
@@ -131,10 +130,10 @@ type SQLSharer struct {
 	db      *sql.DB
 	closeCh chan struct{}
 	doneCh  <-chan struct{}
-	logger  log.Logger
+	logger  *slog.Logger
 }
 
-func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables bool, retention time.Duration) (*SQLSharer, error) {
+func NewSQLSharer(logger *slog.Logger, driver string, dsn string, createTables bool, retention time.Duration) (*SQLSharer, error) {
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to %q database: %w", driver, err)
@@ -247,11 +246,11 @@ func NewSQLSharer(logger log.Logger, driver string, dsn string, createTables boo
 				t := time.NewTicker(15 * time.Minute)
 				select {
 				case <-t.C:
-					level.Info(logger).Log("msg", "Cleaning up old shared links", "retention", retention)
+					logger.Info("Cleaning up old shared links", "retention", retention)
 					if n, err := shr.cleanupOldLinks(retention); err != nil {
-						level.Error(logger).Log("msg", "Error cleaning up old shared links", "err", err)
+						logger.Error("Error cleaning up old shared links", "err", err)
 					} else {
-						level.Info(logger).Log("msg", "Deleted old shared links", "count", n)
+						logger.Info("Deleted old shared links", "count", n)
 					}
 				case <-closeCh:
 					close(doneCh)
@@ -309,7 +308,7 @@ func (s SQLSharer) CreateLink(name string, pageState string) error {
 		// TODO: Check rollback errors.
 		_ = tx.Rollback()
 		// Entry already exists.
-		level.Warn(s.logger).Log("msg", "Short link already exists", "link", name)
+		s.logger.Warn("Short link already exists", "link", name)
 		return nil
 	}
 
@@ -389,7 +388,7 @@ func shortName(pageState string) string {
 	return string(b)[:hashLen]
 }
 
-func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
+func Handle(logger *slog.Logger, s Sharer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if s == nil {
 			http.Error(w, "No link sharing backend configured.", http.StatusServiceUnavailable)
@@ -404,7 +403,7 @@ func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
 			_, err := io.Copy(&body, io.LimitReader(r.Body, maxPageStateSize+1))
 			_ = r.Body.Close()
 			if err != nil {
-				level.Error(logger).Log("msg", "Error reading body", "err", err)
+				logger.Error("Error reading body", "err", err)
 				linkCreationErrors.Inc()
 
 				http.Error(w, "Server Error", http.StatusInternalServerError)
@@ -417,12 +416,12 @@ func Handle(logger log.Logger, s Sharer) http.HandlerFunc {
 				return
 			}
 
-			level.Info(logger).Log("msg", "Creating short link...")
+			logger.Info("Creating short link...")
 			pageState := body.String()
 			name := shortName(pageState)
 			err = s.CreateLink(name, pageState)
 			if err != nil {
-				level.Error(logger).Log("msg", "Error creating short link", "err", err)
+				logger.Error("Error creating short link", "err", err)
 				linkCreationErrors.Inc()
 
 				http.Error(w, "Server Error", http.StatusInternalServerError)

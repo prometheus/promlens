@@ -14,13 +14,13 @@
 package web
 
 import (
+	"log/slog"
 	"net/http"
 	"net/url"
 
-	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
+	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/version"
 	toolkitweb "github.com/prometheus/exporter-toolkit/web"
 
 	"github.com/prometheus/promlens/pkg/grafana"
@@ -32,7 +32,7 @@ import (
 
 // Config configures the PromLens web UI and API.
 type Config struct {
-	Logger                     log.Logger
+	Logger                     *slog.Logger
 	ToolkitConfig              *toolkitweb.FlagConfig
 	RoutePrefix                string
 	ExternalURL                *url.URL
@@ -44,7 +44,7 @@ type Config struct {
 
 // Serve serves the PromLens web UI and API.
 func Serve(cfg *Config) error {
-	prometheus.MustRegister(version.NewCollector("promlens"))
+	prometheus.MustRegister(versioncollector.NewCollector("promlens"))
 	requestsTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "promlens_http_requests_total",
