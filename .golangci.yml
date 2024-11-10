@@ -15,6 +15,7 @@ linters:
     - goimports
     - revive
     - misspell
+    - sloglint
 
 issues:
   max-same-issues: 0
@@ -34,8 +35,6 @@ linters-settings:
             desc: "Use errors or fmt instead of github.com/pkg/errors"
           - pkg: "github.com/stretchr/testify/assert"
             desc: "Use github.com/stretchr/testify/require instead of github.com/stretchr/testify/assert"
-          - pkg: "github.com/go-kit/kit/log"
-            desc: "Use github.com/go-kit/log instead of github.com/go-kit/kit/log"
           - pkg: "io/ioutil"
             desc: "Use corresponding 'os' or 'io' functions instead."
           - pkg: "regexp"
@@ -49,8 +48,6 @@ linters-settings:
       - (net/http.ResponseWriter).Write
       # No need to check for errors on server's shutdown.
       - (*net/http.Server).Shutdown
-      # Never check for logger errors.
-      - (github.com/go-kit/log.Logger).Log
       # Never check for rollback errors as Rollback() is called when a previous error was detected.
       - (github.com/prometheus/prometheus/storage.Appender).Rollback
   goimports:
