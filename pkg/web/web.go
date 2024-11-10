@@ -19,7 +19,7 @@ import (
 	"net/url"
 
 	"github.com/prometheus/client_golang/prometheus"
-	clientVersion "github.com/prometheus/client_golang/prometheus/collectors/version"
+	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	toolkitweb "github.com/prometheus/exporter-toolkit/web"
 
@@ -44,7 +44,7 @@ type Config struct {
 
 // Serve serves the PromLens web UI and API.
 func Serve(cfg *Config) error {
-	prometheus.MustRegister(clientVersion.NewCollector("promlens"))
+	prometheus.MustRegister(versioncollector.NewCollector("promlens"))
 	requestsTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "promlens_http_requests_total",
