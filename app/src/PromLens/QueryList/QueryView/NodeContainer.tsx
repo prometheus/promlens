@@ -3,7 +3,7 @@ import { FaSpinner, FaPlus, FaTimes, FaMinus, FaChild } from 'react-icons/fa';
 import { AiFillEdit, AiOutlineWarning } from 'react-icons/ai';
 import { CgOptions } from 'react-icons/cg';
 
-import { GoPrimitiveDot } from 'react-icons/go';
+import { GoDotFill } from 'react-icons/go';
 
 import ASTNode, { nodeType } from '../../../promql/ast';
 import serializeNode from '../../../promql/serialize';
@@ -318,16 +318,16 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
       case NodeQueryStatus.NodeIncomplete:
         return (
           <>
-            <GoPrimitiveDot className="ast-query-icon" color="orange" title="Please fill out missing child nodes" />{' '}
+            <GoDotFill className="ast-query-icon" color="orange" title="Please fill out missing child nodes" />{' '}
             <span className="ast-node-child-query-error-message">Please fill out missing child nodes</span>
           </>
         );
       case NodeQueryStatus.Running:
-        return <GoPrimitiveDot className="ast-query-icon" color="#ccc" title="Waiting for child query to complete" />;
+        return <GoDotFill className="ast-query-icon" color="#ccc" title="Waiting for child query to complete" />;
       case NodeQueryStatus.Error:
         return (
           <>
-            <GoPrimitiveDot className="ast-query-icon" color="orange" title="Blocked on child query error" />{' '}
+            <GoDotFill className="ast-query-icon" color="orange" title="Blocked on child query error" />{' '}
             <span className="ast-node-child-query-error-message">Blocked on child query error</span>
           </>
         );
@@ -341,7 +341,7 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
         if (node.queryState.status === NodeQueryStatus.Error) {
           return (
             <>
-              <GoPrimitiveDot className="ast-query-icon" color="#a31515" title={node.queryState.error} />{' '}
+              <GoDotFill className="ast-query-icon" color="#a31515" title={node.queryState.error} />{' '}
               <span className="ast-node-query-error-message">{node.queryState.error}</span>
             </>
           );
