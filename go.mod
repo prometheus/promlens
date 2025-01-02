@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.46.0
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/glebarez/go-sqlite v1.22.0
-	github.com/go-sql-driver/mysql v1.7.1
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.20.5
@@ -26,6 +26,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/iam v1.2.1 // indirect
 	cloud.google.com/go/monitoring v1.21.1 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
