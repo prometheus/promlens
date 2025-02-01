@@ -14,7 +14,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/prometheus/common v0.61.0
 	github.com/prometheus/common/assets v0.2.0
-	github.com/prometheus/exporter-toolkit v0.13.1
+	github.com/prometheus/exporter-toolkit v0.13.2
 	github.com/prometheus/prometheus v0.55.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	golang.org/x/net v0.33.0
