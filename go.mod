@@ -2,13 +2,13 @@ module github.com/prometheus/promlens
 
 go 1.22.0
 
-toolchain go1.23.3
+toolchain go1.24.1
 
 require (
 	cloud.google.com/go/storage v1.47.0
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/glebarez/go-sqlite v1.22.0
-	github.com/go-sql-driver/mysql v1.8.1
+	github.com/go-sql-driver/mysql v1.9.1
 	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.21.1
