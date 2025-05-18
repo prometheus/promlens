@@ -1,8 +1,6 @@
 module github.com/prometheus/promlens
 
-go 1.22.0
-
-toolchain go1.23.3
+go 1.23.0
 
 require (
 	cloud.google.com/go/storage v1.47.0
