@@ -165,7 +165,7 @@ func NewSQLSharer(logger *slog.Logger, driver string, dsn string, createTables b
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %w", err)
+				return nil, fmt.Errorf("error creating view table: %w", err)
 			}
 		}
 	case "postgres":
@@ -193,7 +193,7 @@ func NewSQLSharer(logger *slog.Logger, driver string, dsn string, createTables b
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %w", err)
+				return nil, fmt.Errorf("error creating view table: %w", err)
 			}
 		}
 	case "sqlite":
@@ -222,11 +222,11 @@ func NewSQLSharer(logger *slog.Logger, driver string, dsn string, createTables b
 		)`,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("Error creating view table: %w", err)
+				return nil, fmt.Errorf("error creating view table: %w", err)
 			}
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported SQL driver %q", driver)
+		return nil, fmt.Errorf("unsupported SQL driver %q", driver)
 	}
 
 	closeCh := make(chan struct{})
