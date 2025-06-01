@@ -81,7 +81,7 @@
     "@types/react-resize-detector": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
-    "eslint-config-prettier": "^7.1.0",
+    "eslint-config-prettier": "^10.1.5",
     "eslint-config-react-app": "^6.0.0",
     "eslint-plugin-flowtype": "^5.7.2",
     "eslint-plugin-jsx-a11y": "^6.4.1",
