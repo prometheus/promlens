@@ -9,7 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc
 	github.com/lib/pq v1.10.9
-	github.com/prometheus/client_golang v1.21.1
+	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/common v0.64.0
 	github.com/prometheus/common/assets v0.2.0
 	github.com/prometheus/exporter-toolkit v0.13.1
@@ -54,7 +54,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/mdlayher/vsock v1.2.1 // indirect
