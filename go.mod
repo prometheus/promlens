@@ -8,7 +8,7 @@ require (
 	github.com/glebarez/go-sqlite v1.22.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.12.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.5
 	github.com/prometheus/common/assets v0.2.0
