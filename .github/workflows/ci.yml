@@ -6,8 +6,6 @@ on:  # yamllint disable-line rule:truthy
     branches: [main, 'release-*']
     tags: ['v*']
 
-# Docker Hub + Quay publishes use their own secrets; release artifact
-# publishing uses PROMBOT_GITHUB_TOKEN. Default GITHUB_TOKEN only needs read.
 permissions:
   contents: read
 
