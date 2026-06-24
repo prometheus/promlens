@@ -8,7 +8,9 @@ build:
     binaries:
         - name: promlens
           path: ./cmd/promlens
-    flags: -a -tags netgo,builtinassets
+    tags:
+        all:
+            - builtinassets
     ldflags: |
         -X github.com/prometheus/common/version.Version={{.Version}}
         -X github.com/prometheus/common/version.Revision={{.Revision}}

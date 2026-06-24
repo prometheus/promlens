@@ -1,4 +1,4 @@
-// Copyright 2022 The Prometheus Authors
+// Copyright The Prometheus Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -11,12 +11,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !builtinassets
+
 package ui
 
 import (
 	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
-	"github.com/prometheus/common/assets"
+	"github.com/shurcooL/httpfs/filter"
+	"github.com/shurcooL/httpfs/union"
 )
 
-var Assets = http.FS(assets.New(embedFS))
+// Assets contains the project's assets.
+var Assets = func() http.FileSystem {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	var assetsPrefix string
+	switch filepath.Base(wd) {
+	case "promlens":
+		// When running Promlens (without built-in assets) from the repo root.
+		assetsPrefix = "./app"
+	case "app":
+		// When running app tests.
+		assetsPrefix = "./"
+	}
+
+	static := filter.Keep(
+		http.Dir(path.Join(assetsPrefix, "build")),
+		func(path string, fi os.FileInfo) bool {
+			return fi.IsDir() ||
+				(!strings.HasSuffix(path, "map.js") &&
+					!strings.HasSuffix(path, "/bootstrap.js") &&
+					!strings.HasSuffix(path, "/bootstrap-theme.css") &&
+					!strings.HasSuffix(path, "/bootstrap.css"))
+		},
+	)
+
+	return union.New(map[string]http.FileSystem{
+		"/static": static,
+	})
+}()
