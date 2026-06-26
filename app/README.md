@@ -37,6 +37,14 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
+### Serving UI assets from the filesystem
+
+By default, the built web assets are compressed (via the main Makefile) and statically compiled into the Promlens binary using Go's `embed` package.
+
+During development it can be convenient to tell the Promlens server to always serve its web assets from the local filesystem (in the `web/ui/static` build output directory) without having to recompile the Go binary. To make this work, remove the `builtinassets` build tag in the `flags` entry in `.promu.yml`, and then run `make build` (or build Promlens using `go build ./cmd/promlens`).
+
+Note that in most cases, it is even more convenient to just use the development web server via `npm start` as mentioned above, since serving web assets like this from the filesystem still requires rebuilding those assets via `make ui-build` (or `npm run build`) before they can be served.
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
