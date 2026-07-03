@@ -7,12 +7,23 @@ import ASTNode, {
   MatrixSelector,
   LabelMatcher,
 } from './ast';
-import { formatDuration } from '../utils/utils';
+import { formatDuration, formatDurationOrExpr } from '../utils/utils';
 import { aggregatorsWithParam, maybeParenthesizeBinopChild, escapeString } from './utils';
 
-const serializeAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, offset: number): string =>
+const serializeAtAndOffset = (
+  timestamp: number | null,
+  startOrEnd: StartOrEnd,
+  offset: number,
+  offsetExpr: string | null
+): string =>
   `${timestamp !== null ? ` @ ${(timestamp / 1000).toFixed(3)}` : startOrEnd !== null ? ` @ ${startOrEnd}()` : ''}${
-    offset === 0 ? '' : offset > 0 ? ` offset ${formatDuration(offset)}` : ` offset -${formatDuration(-offset)}`
+    offsetExpr != null
+      ? ` offset ${offsetExpr}`
+      : offset === 0
+      ? ''
+      : offset > 0
+      ? ` offset ${formatDuration(offset)}`
+      : ` offset -${formatDuration(-offset)}`
   }`;
 
 const serializeSelector = (node: VectorSelector | MatrixSelector): string => {
@@ -20,10 +31,11 @@ const serializeSelector = (node: VectorSelector | MatrixSelector): string => {
     .filter((m) => !(m.name === '__name__' && m.type === matchType.equal && m.value === node.name))
     .map((m) => `${m.name}${m.type}"${escapeString(m.value)}"`);
 
-  const range = node.type === nodeType.matrixSelector ? `[${formatDuration(node.range)}]` : '';
-  const atAndOffset = serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset);
+  const range = node.type === nodeType.matrixSelector ? `[${formatDurationOrExpr(node.range, node.rangeExpr)}]` : '';
+  const extendedAttribute = node.anchored ? ' anchored' : node.smoothed ? ' smoothed' : '';
+  const atAndOffset = serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr);
 
-  return `${node.name}${matchers.length > 0 ? `{${matchers.join(',')}}` : ''}${range}${atAndOffset}`;
+  return `${node.name}${matchers.length > 0 ? `{${matchers.join(',')}}` : ''}${range}${extendedAttribute}${atAndOffset}`;
 };
 
 const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent = true): string => {
@@ -49,9 +61,9 @@ const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent 
       }${serializeNode(node.expr, childIndent, pretty)}${childListSeparator}${ind})`;
 
     case nodeType.subquery:
-      return `${initialInd}${serializeNode(node.expr, indent, pretty)}[${formatDuration(node.range)}:${
-        node.step !== 0 ? formatDuration(node.step) : ''
-      }]${serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}`;
+      return `${initialInd}${serializeNode(node.expr, indent, pretty)}[${formatDurationOrExpr(node.range, node.rangeExpr)}:${
+        node.stepExpr != null ? node.stepExpr : node.step !== 0 ? formatDuration(node.step) : ''
+      }]${serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}`;
 
     case nodeType.parenExpr:
       return `${initialInd}(${childListSeparator}${serializeNode(

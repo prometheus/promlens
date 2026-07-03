@@ -30,6 +30,12 @@ export const formatDuration = (d: number): string => {
   return r;
 };
 
+// formatDurationOrExpr returns the string form of a duration expression if one
+// is set, and the formatted fixed duration otherwise. The loose != comparison
+// also catches old stored ASTs where the expression fields do not exist.
+export const formatDurationOrExpr = (duration: number, durationExpr: string | null): string =>
+  durationExpr != null ? durationExpr : formatDuration(duration);
+
 export const parseDuration = (durationStr: string): number => {
   if (durationStr === '') {
     throw new Error('empty duration string');

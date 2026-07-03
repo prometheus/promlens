@@ -223,7 +223,17 @@ const NodeEditor: FC<NodeEditorOwnProps & NodeEditorStateProps & NodeEditorDispa
     const childTypes = children.map((c) => nodeValueType(c));
     switch (qt) {
       case QueryType.Selection:
-        setNode({ type: nodeType.vectorSelector, name: '', matchers: [], offset: 0, timestamp: null, startOrEnd: null });
+        setNode({
+          type: nodeType.vectorSelector,
+          name: '',
+          matchers: [],
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+          anchored: false,
+          smoothed: false,
+        });
         break;
       case QueryType.Aggregation:
         let expr: ASTNode = { type: nodeType.placeholder, children: [] };
@@ -284,8 +294,11 @@ const NodeEditor: FC<NodeEditorOwnProps & NodeEditorStateProps & NodeEditorDispa
               ? children[0]
               : { type: nodeType.placeholder, children: [] },
           range: 3600000,
+          rangeExpr: null,
           offset: 0,
+          offsetExpr: null,
           step: 0,
+          stepExpr: null,
           timestamp: null,
           startOrEnd: null,
         });

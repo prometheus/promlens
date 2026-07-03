@@ -89,7 +89,7 @@ const SelectionEditor: FC<SelectionEditorProps> = ({ node, onUpdate, metricNames
     // Otherwise we get an infinite loop.
 
     if (node.type === nodeType.vectorSelector && instantDisabled) {
-      onUpdate({ ...node, type: nodeType.matrixSelector, range: 300000 });
+      onUpdate({ ...node, type: nodeType.matrixSelector, range: 300000, rangeExpr: null });
     }
 
     if (node.type === nodeType.matrixSelector && rangeDisabled) {
@@ -254,15 +254,48 @@ const SelectionEditor: FC<SelectionEditorProps> = ({ node, onUpdate, metricNames
           label={`Range of values${rangeDisabled ? ' (not applicable here)' : ''}`}
           disabled={rangeDisabled}
           checked={node.type === nodeType.matrixSelector}
-          onChange={() => onUpdate({ ...node, type: nodeType.matrixSelector, range: 300000 })}
+          onChange={() => onUpdate({ ...node, type: nodeType.matrixSelector, range: 300000, rangeExpr: null })}
         />
       </Form.Group>
       {node.type === nodeType.matrixSelector && (
         <FormGroup>
           <Form.Label>Range:</Form.Label>
           <Help text="The time range for which to select samples (going from the past to the current timestamp). E.g. '5m' or '1h'." />
-          <DurationEditor duration={node.range} onUpdate={(d: number) => onUpdate({ ...node, range: d })} />
+          <DurationEditor duration={node.range} onUpdate={(d: number) => onUpdate({ ...node, range: d, rangeExpr: null })} />
         </FormGroup>
+      )}
+      {(node.type === nodeType.matrixSelector || node.anchored || node.smoothed) && (
+        <Form.Group>
+          <Form.Label>Range behavior:</Form.Label>
+          <Help text="Experimental modifiers controlling how range boundaries are handled in functions like rate() and increase(). The connected Prometheus server needs to be started with --enable-feature=promql-extended-range-selectors to evaluate them." />
+          <Form.Check
+            custom
+            type="radio"
+            name="radio-extended-range"
+            id={`radio-extended-range-default-${id}`}
+            label="Default"
+            checked={!node.anchored && !node.smoothed}
+            onChange={() => onUpdate({ ...node, anchored: false, smoothed: false })}
+          />
+          <Form.Check
+            custom
+            type="radio"
+            name="radio-extended-range"
+            id={`radio-extended-range-anchored-${id}`}
+            label="Anchored (use the samples at the range boundaries directly, without extrapolation)"
+            checked={!!node.anchored}
+            onChange={() => onUpdate({ ...node, anchored: true, smoothed: false })}
+          />
+          <Form.Check
+            custom
+            type="radio"
+            name="radio-extended-range"
+            id={`radio-extended-range-smoothed-${id}`}
+            label="Smoothed (linearly interpolate values at the range boundaries)"
+            checked={!!node.smoothed}
+            onChange={() => onUpdate({ ...node, anchored: false, smoothed: true })}
+          />
+        </Form.Group>
       )}
       <AtAndOffsetEditor node={node} onUpdate={(node: MatrixSelector | VectorSelector | Subquery) => onUpdate(node)} />
     </>

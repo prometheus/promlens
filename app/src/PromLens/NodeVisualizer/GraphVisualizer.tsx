@@ -36,8 +36,12 @@ const GraphVisualizer: FC<GraphVisualizerProps> = React.memo(
         name: node.name,
         matchers: node.matchers,
         offset: node.offset,
+        offsetExpr: node.offsetExpr,
         timestamp: node.timestamp,
         startOrEnd: node.startOrEnd,
+        // The extended range selector modifiers only apply to range selection.
+        anchored: false,
+        smoothed: false,
       };
     }
 

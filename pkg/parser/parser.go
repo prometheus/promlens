@@ -25,12 +25,31 @@ import (
 	prom_httputil "github.com/prometheus/prometheus/util/httputil"
 )
 
+// promqlParser is safe for concurrent use, each parse call uses its own state.
+// Experimental features are enabled because PromLens only parses queries; the
+// connected Prometheus server decides whether it can evaluate them.
+var promqlParser = parser.NewParser(parser.Options{
+	EnableExperimentalFunctions:  true,
+	ExperimentalDurationExpr:     true,
+	EnableExtendedRangeSelectors: true,
+})
+
 func getStartOrEnd(startOrEnd parser.ItemType) interface{} {
 	if startOrEnd == 0 {
 		return nil
 	}
 
 	return startOrEnd.String()
+}
+
+// durationExprString returns the string form of a duration expression, or nil
+// if there is none. Duration expressions are passed to the frontend as opaque
+// strings rather than translated ASTs.
+func durationExprString(e *parser.DurationExpr) interface{} {
+	if e == nil {
+		return nil
+	}
+	return e.String()
 }
 
 func translateAST(node parser.Expr) interface{} {
@@ -89,18 +108,25 @@ func translateAST(node parser.Expr) interface{} {
 			"type":       "matrixSelector",
 			"name":       vs.Name,
 			"range":      n.Range.Milliseconds(),
+			"rangeExpr":  durationExprString(n.RangeExpr),
 			"offset":     vs.OriginalOffset.Milliseconds(),
+			"offsetExpr": durationExprString(vs.OriginalOffsetExpr),
 			"matchers":   translateMatchers(vs.LabelMatchers),
 			"timestamp":  vs.Timestamp,
 			"startOrEnd": getStartOrEnd(vs.StartOrEnd),
+			"anchored":   vs.Anchored,
+			"smoothed":   vs.Smoothed,
 		}
 	case *parser.SubqueryExpr:
 		return map[string]interface{}{
 			"type":       "subquery",
 			"expr":       translateAST(n.Expr),
 			"range":      n.Range.Milliseconds(),
+			"rangeExpr":  durationExprString(n.RangeExpr),
 			"offset":     n.OriginalOffset.Milliseconds(),
+			"offsetExpr": durationExprString(n.OriginalOffsetExpr),
 			"step":       n.Step.Milliseconds(),
+			"stepExpr":   durationExprString(n.StepExpr),
 			"timestamp":  n.Timestamp,
 			"startOrEnd": getStartOrEnd(n.StartOrEnd),
 		}
@@ -130,9 +156,12 @@ func translateAST(node parser.Expr) interface{} {
 			"type":       "vectorSelector",
 			"name":       n.Name,
 			"offset":     n.OriginalOffset.Milliseconds(),
+			"offsetExpr": durationExprString(n.OriginalOffsetExpr),
 			"matchers":   translateMatchers(n.LabelMatchers),
 			"timestamp":  n.Timestamp,
 			"startOrEnd": getStartOrEnd(n.StartOrEnd),
+			"anchored":   n.Anchored,
+			"smoothed":   n.Smoothed,
 		}
 	}
 	panic("unsupported node type")
@@ -158,7 +187,7 @@ func translateMatchers(in []*labels.Matcher) interface{} {
 }
 
 func Handle(w http.ResponseWriter, r *http.Request) {
-	expr, err := parser.ParseExpr(r.FormValue("expr"))
+	expr, err := promqlParser.ParseExpr(r.FormValue("expr"))
 	if err != nil {
 		errJSON, err := json.Marshal(map[string]string{"type": "error", "message": fmt.Sprintf("Expression incomplete or buggy: %v", err)})
 		if err != nil {

@@ -16,7 +16,7 @@ const SubqueryEditor: FC<SubqueryEditorProps> = ({ node, onUpdate }) => {
       <Form.Group>
         <Form.Label>Range:</Form.Label>
         <Help text="The time range for which to run the subquery (going from the past to the current timestamp). E.g. '5m' or '1h'." />
-        <DurationEditor duration={node.range} onUpdate={(d: number) => onUpdate({ ...node, range: d })} />
+        <DurationEditor duration={node.range} onUpdate={(d: number) => onUpdate({ ...node, range: d, rangeExpr: null })} />
       </Form.Group>
 
       <AtAndOffsetEditor node={node} onUpdate={(node: MatrixSelector | VectorSelector | Subquery) => onUpdate(node)} />
@@ -24,7 +24,7 @@ const SubqueryEditor: FC<SubqueryEditorProps> = ({ node, onUpdate }) => {
       <Form.Group>
         <Form.Label>Resolution step:</Form.Label>
         <Help text="The resolution between successive evaluation timestamps within the subquery. If this is set to 0s, the global rule evaluation interval will be used as a default." />
-        <DurationEditor duration={node.step} onUpdate={(d: number) => onUpdate({ ...node, step: d })} />
+        <DurationEditor duration={node.step} onUpdate={(d: number) => onUpdate({ ...node, step: d, stepExpr: null })} />
       </Form.Group>
     </>
   );

@@ -44,7 +44,7 @@ const AtAndOffsetEditor: FC<AtAndOffsetEditorProps> = ({ node, onUpdate }) => {
         <Help text="Duration by which the expression is time-shifted. E.g. '5m' or '1h'." />
         <DurationEditor
           duration={Math.abs(node.offset)}
-          onUpdate={(d: number) => onUpdate({ ...node, offset: node.offset >= 0 ? d : -d })}
+          onUpdate={(d: number) => onUpdate({ ...node, offset: node.offset >= 0 ? d : -d, offsetExpr: null })}
         />
       </Form.Group>
       <Form.Group>
@@ -57,7 +57,7 @@ const AtAndOffsetEditor: FC<AtAndOffsetEditorProps> = ({ node, onUpdate }) => {
           id={`radio-positive-offset-${id}`}
           label="Shift past data into the present (positive offset)."
           checked={node.offset >= 0}
-          onChange={() => onUpdate({ ...node, offset: -node.offset })}
+          onChange={() => onUpdate({ ...node, offset: -node.offset, offsetExpr: null })}
           disabled={node.offset === 0}
         />
         <Form.Check
@@ -67,7 +67,7 @@ const AtAndOffsetEditor: FC<AtAndOffsetEditorProps> = ({ node, onUpdate }) => {
           id={`radio-negative-offset-${id}`}
           label="Shift future data into the present (negative offset)."
           checked={node.offset < 0}
-          onChange={() => onUpdate({ ...node, offset: -node.offset })}
+          onChange={() => onUpdate({ ...node, offset: -node.offset, offsetExpr: null })}
           disabled={node.offset === 0}
         />
       </Form.Group>

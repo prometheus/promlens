@@ -1,10 +1,19 @@
 import React, { ReactElement, ReactNode } from 'react';
 import ASTNode, { VectorSelector, matchType, vectorMatchCardinality, nodeType, StartOrEnd, MatrixSelector } from './ast';
-import { formatDuration } from '../utils/utils';
+import { formatDuration, formatDurationOrExpr } from '../utils/utils';
 import { labelNameList } from '../utils/LabelNameList';
 import { maybeParenthesizeBinopChild, escapeString } from './utils';
 
-const formatAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, offset: number): ReactNode => (
+const formatDurationSpan = (duration: number, durationExpr: string | null): ReactNode => (
+  <span className="promql-duration">{formatDurationOrExpr(duration, durationExpr)}</span>
+);
+
+const formatAtAndOffset = (
+  timestamp: number | null,
+  startOrEnd: StartOrEnd,
+  offset: number,
+  offsetExpr: string | null
+): ReactNode => (
   <>
     {timestamp !== null ? (
       <>
@@ -21,7 +30,12 @@ const formatAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, off
     ) : (
       <></>
     )}
-    {offset === 0 ? (
+    {offsetExpr != null ? (
+      <>
+        {' '}
+        <span className="promql-keyword">offset</span> <span className="promql-duration">{offsetExpr}</span>
+      </>
+    ) : offset === 0 ? (
       <></>
     ) : offset > 0 ? (
       <>
@@ -59,12 +73,20 @@ const formatSelector = (node: VectorSelector | MatrixSelector): ReactElement => 
           {'}'}
         </>
       )}
-      {node.type === nodeType.matrixSelector && (
+      {node.type === nodeType.matrixSelector && <>[{formatDurationSpan(node.range, node.rangeExpr)}]</>}
+      {node.anchored && (
         <>
-          [<span className="promql-duration">{formatDuration(node.range)}</span>]
+          {' '}
+          <span className="promql-keyword">anchored</span>
         </>
       )}
-      {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}
+      {node.smoothed && (
+        <>
+          {' '}
+          <span className="promql-keyword">smoothed</span>
+        </>
+      )}
+      {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}
     </>
   );
 };
@@ -116,9 +138,13 @@ const formatNodeInternal = (node: ASTNode, showChildren: boolean, maxDepth?: num
       return (
         <>
           {showChildren && formatNode(node.expr, showChildren, childMaxDepth)}[
-          <span className="promql-duration">{formatDuration(node.range)}</span>:
-          {node.step !== 0 && <span className="promql-duration">{formatDuration(node.step)}</span>}]
-          {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}
+          {formatDurationSpan(node.range, node.rangeExpr)}:
+          {node.stepExpr != null ? (
+            <span className="promql-duration">{node.stepExpr}</span>
+          ) : (
+            node.step !== 0 && <span className="promql-duration">{formatDuration(node.step)}</span>
+          )}
+          ]{formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}
         </>
       );
     case nodeType.parenExpr:

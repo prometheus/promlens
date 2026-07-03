@@ -3,7 +3,7 @@ import ASTNode, { nodeType } from '../../../promql/ast';
 import AggregationExplainView from './Aggregation';
 import BinaryExprExplainView from './BinaryExpr/BinaryExpr';
 import SelectorExplainView from './Selector';
-import { formatDuration } from '../../../utils/utils';
+import { formatDuration, formatDurationOrExpr } from '../../../utils/utils';
 import funcDocs from '../../../promql/functionDocs';
 import { Alert } from 'react-bootstrap';
 import { escapeString, containsPlaceholders } from '../../../promql/utils';
@@ -48,8 +48,13 @@ const ExplainView: FC<ExplainViewProps> = ({ node, promAPI }) => {
       return (
         <Alert variant="secondary">
           This node evaluates the passed expression as a subquery over the last{' '}
-          <span className="promql-code promql-duration">{formatDuration(node.range)}</span> at a query resolution{' '}
-          {node.step > 0 ? (
+          <span className="promql-code promql-duration">{formatDurationOrExpr(node.range, node.rangeExpr)}</span> at a query
+          resolution{' '}
+          {node.stepExpr != null ? (
+            <>
+              of <span className="promql-code promql-duration">{node.stepExpr}</span>
+            </>
+          ) : node.step > 0 ? (
             <>
               of <span className="promql-code promql-duration">{formatDuration(node.step)}</span>
             </>
@@ -66,7 +71,11 @@ const ExplainView: FC<ExplainViewProps> = ({ node, promAPI }) => {
           ) : (
             <></>
           )}
-          {node.offset === 0 ? (
+          {node.offsetExpr != null ? (
+            <>
+              , time-shifted by <span className="promql-code promql-duration">{node.offsetExpr}</span>
+            </>
+          ) : node.offset === 0 ? (
             <></>
           ) : node.offset > 0 ? (
             <>

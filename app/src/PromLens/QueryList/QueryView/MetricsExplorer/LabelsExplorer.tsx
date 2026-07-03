@@ -73,8 +73,11 @@ const LabelsExplorer: FC<SeriesExplorerProps> = ({
     name: metricName,
     matchers,
     offset: 0,
+    offsetExpr: null,
     timestamp: null,
     startOrEnd: null,
+    anchored: false,
+    smoothed: false,
   };
   const seriesQuery = promAPI.useFetchAPI<Metric[]>(`/api/v1/series?match[]=${encodeURIComponent(serializeNode(selector))}`);
   const [numSeries, labelCardinalities, labelExamples] = useMemo(() => {

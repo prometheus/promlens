@@ -142,17 +142,27 @@ export interface MatrixSelector {
   name: string;
   matchers: LabelMatcher[];
   range: number;
+  // rangeExpr is the string form of an experimental duration expression
+  // (e.g. "5m * 2" or "step()"). When set, it takes precedence over 'range'.
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  // Experimental extended range selector modifiers.
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Subquery {
   type: nodeType.subquery;
   expr: ASTNode;
   range: number;
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   step: number;
+  stepExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
 }
@@ -183,8 +193,12 @@ export interface VectorSelector {
   name: string;
   matchers: LabelMatcher[];
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  // Experimental extended range selector modifiers.
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Placeholder {
