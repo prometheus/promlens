@@ -25,6 +25,8 @@ export enum aggregationType {
   bottomk = 'bottomk',
   topk = 'topk',
   quantile = 'quantile',
+  limitk = 'limitk',
+  limitRatio = 'limit_ratio',
 }
 
 export enum binaryOperatorType {
@@ -94,6 +96,7 @@ export interface Func {
   argTypes: valueType[];
   variadic: number;
   returnType: valueType;
+  experimental?: boolean;
 }
 
 export interface LabelMatcher {
@@ -107,6 +110,10 @@ export interface VectorMatching {
   labels: string[];
   on: boolean;
   include: string[];
+  // Fill values are strings so that Inf/NaN survive JSON transport and print
+  // as valid PromQL tokens.
+  fillLHS?: string;
+  fillRHS?: string;
 }
 
 export type StartOrEnd = 'start' | 'end' | null;

@@ -17,7 +17,7 @@ import $ from 'jquery';
 
 import { escapeHTML } from '../../../utils/html';
 import { GraphProps, GraphSeries } from './Graph';
-import { RangeSamples } from '../../QueryList/QueryView/QueryResultTypes';
+import { RangeSamples, mergeSamplePoints } from '../../QueryList/QueryView/QueryResultTypes';
 
 export const formatValue = (y: number | null): string => {
   if (y === null) {
@@ -173,16 +173,20 @@ export const getColors = (data: RangeSamples[]) => {
 export const normalizeData = ({ stacked, queryParams, data }: GraphProps): GraphSeries[] => {
   const colors = getColors(data);
   const { startTime, endTime, resolution } = queryParams;
-  return data.map(({ values, metric }, index) => {
+  return data.map(({ values, histograms, metric }, index) => {
+    // Histogram samples are plotted using the histogram's sum as the y-value.
+    const points = mergeSamplePoints(values, histograms);
+
     // Insert nulls for all missing steps.
     const data = [];
     let pos = 0;
 
     for (let t = startTime; t <= endTime; t += resolution) {
       // Allow for floating point inaccuracy.
-      const currentValue = values[pos];
-      if (values.length > pos && currentValue[0] < t + resolution / 100) {
-        data.push([currentValue[0] * 1000, parseValue(currentValue[1], stacked)]);
+      const currentPoint = points[pos];
+      if (points.length > pos && currentPoint.timestamp < t + resolution / 100) {
+        const value = currentPoint.histogram !== undefined ? currentPoint.histogram.sum : currentPoint.value;
+        data.push([currentPoint.timestamp * 1000, parseValue(value !== undefined ? value : '', stacked)]);
         pos++;
       } else {
         // TODO: Flot has problems displaying intermittent "null" values when stacked,

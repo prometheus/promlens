@@ -44,7 +44,11 @@ func main() {
 	export const functionSignatures: Record<string, Func> = {`)
 	for _, fnName := range fnNames {
 		fn := parser.Functions[fnName]
-		fmt.Printf("  %s: { name: '%s', argTypes: [%s], variadic: %d, returnType: %s },\n", fn.Name, fn.Name, formatValueTypes(fn.ArgTypes), fn.Variadic, formatValueType(fn.ReturnType))
+		experimental := ""
+		if fn.Experimental {
+			experimental = ", experimental: true"
+		}
+		fmt.Printf("  %s: { name: '%s', argTypes: [%s], variadic: %d, returnType: %s%s },\n", fn.Name, fn.Name, formatValueTypes(fn.ArgTypes), fn.Variadic, formatValueType(fn.ReturnType), experimental)
 	}
 	fmt.Println("}")
 }

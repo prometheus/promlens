@@ -5,7 +5,8 @@ import BinaryExprExplainView from './BinaryExpr/BinaryExpr';
 import SelectorExplainView from './Selector';
 import { formatDuration, formatDurationOrExpr } from '../../../utils/utils';
 import funcDocs from '../../../promql/functionDocs';
-import { Alert } from 'react-bootstrap';
+import { functionSignatures } from '../../../promql/functionSignatures';
+import { Alert, Badge } from 'react-bootstrap';
 import { escapeString, containsPlaceholders } from '../../../promql/utils';
 import { PromAPI } from '../../../promAPI/promAPI';
 
@@ -37,6 +38,12 @@ const ExplainView: FC<ExplainViewProps> = ({ node, promAPI }) => {
               <span className="promql-code promql-keyword">{node.func.name}()</span>
             </a>{' '}
             function{node.args.length > 0 ? ' on the provided inputs' : ''}.
+            {functionSignatures[node.func.name]?.experimental && (
+              <>
+                {' '}
+                <Badge variant="warning">experimental</Badge>
+              </>
+            )}
           </p>
           <hr />
           {funcDocs[node.func.name]}

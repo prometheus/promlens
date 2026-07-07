@@ -7,6 +7,7 @@ import Graph from './Graph/Graph';
 import { Alert } from 'react-bootstrap';
 import { PromAPI } from '../../promAPI/promAPI';
 import { VectorSelector } from '../../state/ast';
+import { QueryAnnotations } from './DataTable';
 
 interface GraphVisualizerProps {
   endTime: number | null;
@@ -60,6 +61,9 @@ const GraphVisualizer: FC<GraphVisualizerProps> = React.memo(
 
     const query = promAPI.useFetchAPI<QueryResult>(`/api/v1/query_range?${params}`);
 
+    const histogramSeriesCount =
+      lastResult === null ? 0 : lastResult.filter((s) => s.histograms !== undefined && s.histograms.length > 0).length;
+
     useEffect(() => {
       if (query.data !== undefined) {
         if (query.data.resultType !== 'matrix') {
@@ -82,6 +86,13 @@ const GraphVisualizer: FC<GraphVisualizerProps> = React.memo(
         {query.error !== undefined && (
           <Alert variant="danger">
             <strong>Error:</strong> {query.error.message}
+          </Alert>
+        )}
+        <QueryAnnotations warnings={query.warnings} infos={query.infos} />
+        {histogramSeriesCount > 0 && (
+          <Alert variant="info">
+            <strong>Notice:</strong> {histogramSeriesCount} series contain{histogramSeriesCount === 1 ? 's' : ''} native
+            histograms; their sum is plotted.
           </Alert>
         )}
         {lastResult !== null &&

@@ -312,7 +312,10 @@ interface LabelValueEditorProps {
 }
 
 export const LabelValueEditor: FC<LabelValueEditorProps> = ({ name, value, onChange, onEnter, inputClass, promAPI }) => {
-  const labelValuesQuery = promAPI.useFetchAPI<string[]>(`/api/v1/label/${name}/values`, name.trim() === '');
+  const labelValuesQuery = promAPI.useFetchAPI<string[]>(
+    `/api/v1/label/${encodeURIComponent(name)}/values`,
+    name.trim() === ''
+  );
 
   return (
     <AutosuggestInput

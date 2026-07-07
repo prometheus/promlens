@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { ServerSettings } from '../state/state';
 
-interface APIResult<T> {
+export interface APIResult<T> {
   status: 'success' | 'error';
   data?: T;
   error?: string;
+  warnings?: string[];
+  infos?: string[];
 }
 
 export interface FetchAPIState<T> {
   data?: T;
   error?: Error;
   loading: boolean;
+  warnings?: string[];
+  infos?: string[];
 }
 
 const badRequest = 400;
@@ -72,11 +76,17 @@ export class PromAPI {
     const [error, setError] = useState<Error>();
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [loading, setLoading] = useState<boolean>(true);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [warnings, setWarnings] = useState<string[]>();
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [infos, setInfos] = useState<string[]>();
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       setData(undefined);
       setError(undefined);
+      setWarnings(undefined);
+      setInfos(undefined);
 
       if (noop) {
         setLoading(false);
@@ -91,6 +101,8 @@ export class PromAPI {
           const apiRes = await this.fetchAPI<T>(resource, { signal: abortController.signal });
           setError(undefined);
           setData(apiRes.data!);
+          setWarnings(apiRes.warnings);
+          setInfos(apiRes.infos);
         } catch (error) {
           setError(error as Error);
         } finally {
@@ -105,6 +117,6 @@ export class PromAPI {
       };
     }, [this.serverSettings, resource, noop]);
 
-    return { data, error, loading };
+    return { data, error, loading, warnings, infos };
   };
 }

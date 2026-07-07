@@ -73,7 +73,7 @@ export const matchingCriteriaList = (name: string, matchers: LabelMatcher[]): Re
 
 const SelectorExplainView: FC<SelectorExplainViewProps> = ({ node, promAPI }) => {
   const baseMetricName = node.name.replace(/(_count|_sum|_bucket)$/, '');
-  const metricMeta = promAPI.useFetchAPI<MetricMetadata>(`/api/v1/metadata?metric=${baseMetricName}`);
+  const metricMeta = promAPI.useFetchAPI<MetricMetadata>(`/api/v1/metadata?metric=${encodeURIComponent(baseMetricName)}`);
 
   return (
     <Alert variant="secondary">

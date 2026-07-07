@@ -83,6 +83,23 @@ func TestHandle(t *testing.T) {
 			expr:     `max_over_time(demo_cpu[max_of(1h, range()):step() / 2])`,
 			contains: []string{`"rangeExpr":"max_of(1h, range())"`, `"stepExpr":"step() / 2"`},
 		},
+		// Binary operator fill modifiers.
+		{
+			expr:     `foo / fill(0) bar`,
+			contains: []string{`"fillLHS":"0"`, `"fillRHS":"0"`},
+		},
+		{
+			expr:     `foo / on(job) fill_left(1) bar`,
+			contains: []string{`"fillLHS":"1"`, `"on":true`},
+		},
+		{
+			expr:     `foo / fill_right(2.5) bar`,
+			contains: []string{`"fillRHS":"2.5"`},
+		},
+		{
+			expr:     `foo / fill(Inf) bar`,
+			contains: []string{`"fillLHS":"+Inf"`, `"fillRHS":"+Inf"`},
+		},
 	}
 
 	for _, test := range tests {

@@ -1,6 +1,6 @@
 import React, { FC, useState, useRef, useLayoutEffect, CSSProperties, useEffect, useContext, ReactNode } from 'react';
 import { FaSpinner, FaPlus, FaTimes, FaMinus, FaChild } from 'react-icons/fa';
-import { AiFillEdit, AiOutlineWarning } from 'react-icons/ai';
+import { AiFillEdit, AiOutlineInfoCircle, AiOutlineWarning } from 'react-icons/ai';
 import { CgOptions } from 'react-icons/cg';
 
 import { GoDotFill } from 'react-icons/go';
@@ -115,6 +115,8 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const [connectorStyle, setConnectorStyle] = useState<CSSProperties>({});
+  const [queryWarnings, setQueryWarnings] = useState<string[]>([]);
+  const [queryInfos, setQueryInfos] = useState<string[]>([]);
 
   const astNode = denormalizeAST(tree, nodeID);
   // TODO: This is just needed for node action buttons - does this extra cost matter? If yes, we could pass down the astNode from the current node to the child instead?
@@ -181,6 +183,9 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
       setNodeQueryState(queryID, nodeID, state);
     };
 
+    setQueryWarnings([]);
+    setQueryInfos([]);
+
     if ([nodeType.stringLiteral, nodeType.numberLiteral].includes(getNonParenNodeType(astNode))) {
       setQueryState({
         status: NodeQueryStatus.Success,
@@ -230,6 +235,9 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
         if (json.status !== 'success') {
           throw new Error(json.error || 'invalid response JSON');
         }
+
+        setQueryWarnings(json.warnings || []);
+        setQueryInfos(json.infos || []);
 
         let resultSeries = 0;
         const labelValuesByName: Record<string, Record<string, number>> = {};
@@ -611,6 +619,40 @@ const NodeContainer: FC<NodeContainerOwnProps & NodeContainerStateProps & NodeCo
               )}
             >
               <AiOutlineWarning color="#e2a22e" />
+            </OverlayTrigger>
+          </div>
+        )}
+        {queryWarnings.length > 0 && (
+          <div className="ast-node-warnings">
+            <OverlayTrigger
+              popperConfig={{ strategy: 'fixed' }}
+              placement="bottom"
+              overlay={(props: any) => (
+                <Tooltip id={`query-warning-tooltip`} {...props}>
+                  {queryWarnings.map((w, idx) => (
+                    <p key={idx}>{w}</p>
+                  ))}
+                </Tooltip>
+              )}
+            >
+              <AiOutlineWarning color="#e2a22e" />
+            </OverlayTrigger>
+          </div>
+        )}
+        {queryInfos.length > 0 && (
+          <div className="ast-node-warnings">
+            <OverlayTrigger
+              popperConfig={{ strategy: 'fixed' }}
+              placement="bottom"
+              overlay={(props: any) => (
+                <Tooltip id={`query-info-tooltip`} {...props}>
+                  {queryInfos.map((info, idx) => (
+                    <p key={idx}>{info}</p>
+                  ))}
+                </Tooltip>
+              )}
+            >
+              <AiOutlineInfoCircle color="#3373fc" />
             </OverlayTrigger>
           </div>
         )}

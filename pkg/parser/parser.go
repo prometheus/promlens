@@ -32,6 +32,7 @@ var promqlParser = parser.NewParser(parser.Options{
 	EnableExperimentalFunctions:  true,
 	ExperimentalDurationExpr:     true,
 	EnableExtendedRangeSelectors: true,
+	EnableBinopFillModifiers:     true,
 })
 
 func getStartOrEnd(startOrEnd parser.ItemType) interface{} {
@@ -70,12 +71,21 @@ func translateAST(node parser.Expr) interface{} {
 	case *parser.BinaryExpr:
 		var matching interface{}
 		if m := n.VectorMatching; m != nil {
-			matching = map[string]interface{}{
+			mm := map[string]interface{}{
 				"card":    m.Card.String(),
 				"labels":  sanitizeList(m.MatchingLabels),
 				"on":      m.On,
 				"include": sanitizeList(m.Include),
 			}
+			// Fill values are passed as strings, like number literal values,
+			// since JSON cannot represent Inf/NaN.
+			if m.FillValues.LHS != nil {
+				mm["fillLHS"] = strconv.FormatFloat(*m.FillValues.LHS, 'f', -1, 64)
+			}
+			if m.FillValues.RHS != nil {
+				mm["fillRHS"] = strconv.FormatFloat(*m.FillValues.RHS, 'f', -1, 64)
+			}
+			matching = mm
 		}
 
 		return map[string]interface{}{

@@ -1,5 +1,24 @@
 **NOTE:** With the open-sourcing of PromLens by [PromLabs](https://promlabs.com/), we decided to reset the latest proprietary version from 1.1.0 back to 0.1.0. We still list the proprietary version history in the changelog below for reference, denoted by a `promlabs-` version prefix.
 
+## 0.4.0-rc.0 / 2026-07-07
+
+* [CHANGE] PromQL: The `holt_winters` function is now called `double_exponential_smoothing`, following its rename in Prometheus 3.0. #266
+* [CHANGE] Logging: Switch from go-kit/log to Go's standard library log/slog. The log output format has changed. #149
+* [CHANGE] Docker images are now also published to GHCR (`ghcr.io/prometheus/promlens`). #260
+* [FEATURE] PromQL: Update the PromQL parser to Prometheus 3.13. This adds support for UTF-8 metric and label names and for all functions added since Prometheus 2.55, e.g. `info()`, `sort_by_label()`, `mad_over_time()`, and the native histogram functions (`histogram_avg()`, `histogram_count()`, `histogram_sum()`, and more). Experimental functions are always enabled in the parser; whether they can be evaluated is decided by the connected Prometheus server. #266
+* [FEATURE] PromQL: Support the experimental extended range selectors (`anchored` and `smoothed` modifiers) and duration expressions (e.g. `foo[5m * 2]`, `step()`, `min_of()`/`max_of()`) in the parser, tree view, and query editor. #266
+* [FEATURE] Autocomplete: Update codemirror-promql to 0.313.0, bringing expression editor support for the Prometheus 3.13 PromQL syntax. #266
+* [FEATURE] Native histograms: Display native histogram results in the table view (count, sum, and bucket breakdown) and in the graph view (plotting the histogram sum). #266
+* [FEATURE] PromQL: Support the `limitk()` and `limit_ratio()` aggregations and the experimental `fill()`/`fill_left()`/`fill_right()` binary operator modifiers in the parser, tree view, editors, and explain views. #266
+* [FEATURE] Display warnings and infos returned by the Prometheus query API next to query results and tree nodes. #266
+* [ENHANCEMENT] Mark experimental PromQL functions with an "experimental" badge in the function explain view, and add missing short descriptions for the trigonometric functions. #266
+* [ENHANCEMENT] Update all Go dependencies to their latest versions and build with Go 1.26. #266
+* [ENHANCEMENT] Set datasource ID from URL query parameters. #112
+* [ENHANCEMENT] Completely revamp the vector-to-vector binary operation matching visualizer. #124
+* [ENHANCEMENT] Add `atan2` binary operator support. #117
+* [BUGFIX] PromQL: Quote UTF-8 metric and label names when serializing queries (selectors, `by`/`without`, `on`/`ignoring`, `group_left`/`group_right`), and escape control and other non-printable characters in strings like Prometheus does. #266
+* [BUGFIX] URL-encode metric and label names in Prometheus API requests, fixing metadata lookups for UTF-8 names. #266
+
 ## 0.3.0 / 2022-12-05
 
 * [SECURITY] Update Exporter Toolkit (CVE-2022-46146) #66

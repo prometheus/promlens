@@ -41,6 +41,9 @@ const VectorScalarBinaryExprExplainView: FC<VectorScalarBinaryExprExplainViewPro
       </thead>
       <tbody>
         {vector.map((sample: InstantSample, idx) => {
+          if (sample.value === undefined) {
+            return null;
+          }
           const vecVal = parsePrometheusFloat(sample.value[1]);
           const scalVal = parsePrometheusFloat(scalar[1]);
 
