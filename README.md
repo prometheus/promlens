@@ -1,5 +1,8 @@
 # PromLens
 
+> [!WARNING]
+> PromLens is no longer maintained and this repository has been archived. Much of its functionality has been merged into the Prometheus server's "Explain" tab, where it is kept up to date. The last PromLens release (2022) is missing significant Prometheus features, such as newer functions, Native Histograms, and Duration Expressions, and this gap will only grow over time. We would like to thank PromLabs and Chronosphere for open sourcing PromLens and bringing its features into the Prometheus server.
+
 PromLens is a web-based PromQL query builder, analyzer, and visualizer.
 
 PromLens was initially created as a commercial software by [PromLabs](https://promlabs.com/) and then donated to the open-source Prometheus project by PromLabs and [Chronosphere](https://www.chronosphere.io/).
