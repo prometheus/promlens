@@ -1,6 +1,6 @@
 **NOTE:** With the open-sourcing of PromLens by [PromLabs](https://promlabs.com/), we decided to reset the latest proprietary version from 1.1.0 back to 0.1.0. We still list the proprietary version history in the changelog below for reference, denoted by a `promlabs-` version prefix.
 
-## 0.4.0-rc.0 / 2026-07-07
+## 0.4.0 / 2026-07-10
 
 * [CHANGE] PromQL: The `holt_winters` function is now called `double_exponential_smoothing`, following its rename in Prometheus 3.0. #266
 * [CHANGE] Logging: Switch from go-kit/log to Go's standard library log/slog. The log output format has changed. #149
