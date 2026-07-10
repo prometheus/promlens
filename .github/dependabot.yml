@@ -1,3 +1,6 @@
+###
+# Avoid syncing from prometheus/prometheus: no_prometheus_repo_sync
+###
 version: 2
 updates:
   - package-ecosystem: "gomod"
@@ -35,3 +38,14 @@ updates:
       - .github/workflows/govulncheck.yml
       - .github/workflows/scorecards.yml
       - .github/workflows/stale.yml
+  - package-ecosystem: "npm"
+    directory: "/app"
+    schedule:
+      interval: "monthly"
+    groups:
+      everything:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
