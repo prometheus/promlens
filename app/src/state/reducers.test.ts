@@ -8,9 +8,10 @@ const makeDummyNode = (): Node => {
     parentID: null,
     childIDs: [],
     node: { type: nodeType.placeholder },
-    // TODO: Why not allow null for the query result...
-    queryResult: { numSeries: 0, queryTime: 0, labelCardinalities: {}, labelExamples: {}, error: null, loading: false },
-    queryStatus: NodeQueryStatus.Success,
+    queryState: {
+      status: NodeQueryStatus.Success,
+      result: { numSeries: 0, queryTime: 0, labelCardinalities: {}, labelExamples: {} },
+    },
     editMode: NodeEditMode.None,
   };
 };

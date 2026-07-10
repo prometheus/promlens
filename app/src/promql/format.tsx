@@ -1,10 +1,19 @@
 import React, { ReactElement, ReactNode } from 'react';
 import ASTNode, { VectorSelector, matchType, vectorMatchCardinality, nodeType, StartOrEnd, MatrixSelector } from './ast';
-import { formatDuration } from '../utils/utils';
+import { formatDuration, formatDurationOrExpr } from '../utils/utils';
 import { labelNameList } from '../utils/LabelNameList';
-import { maybeParenthesizeBinopChild, escapeString } from './utils';
+import { maybeParenthesizeBinopChild, escapeString, isLegacyMetricName, maybeQuoteLabelName } from './utils';
 
-const formatAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, offset: number): ReactNode => (
+const formatDurationSpan = (duration: number, durationExpr: string | null): ReactNode => (
+  <span className="promql-duration">{formatDurationOrExpr(duration, durationExpr)}</span>
+);
+
+const formatAtAndOffset = (
+  timestamp: number | null,
+  startOrEnd: StartOrEnd,
+  offset: number,
+  offsetExpr: string | null
+): ReactNode => (
   <>
     {timestamp !== null ? (
       <>
@@ -21,7 +30,12 @@ const formatAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, off
     ) : (
       <></>
     )}
-    {offset === 0 ? (
+    {offsetExpr != null ? (
+      <>
+        {' '}
+        <span className="promql-keyword">offset</span> <span className="promql-duration">{offsetExpr}</span>
+      </>
+    ) : offset === 0 ? (
       <></>
     ) : offset > 0 ? (
       <>
@@ -43,28 +57,46 @@ const formatSelector = (node: VectorSelector | MatrixSelector): ReactElement => 
     .map((m, i) => (
       <span key={i}>
         {i !== 0 && ','}
-        <span className="promql-label-name">{m.name}</span>
+        <span className="promql-label-name">{maybeQuoteLabelName(m.name)}</span>
         {m.type}
         <span className="promql-string">"{escapeString(m.value)}"</span>
       </span>
     ));
 
+  // A metric name that is not legacy-valid cannot be printed as a prefix and has
+  // to go into the braces as a leading quoted string instead.
+  const nameInBraces = node.name !== '' && !isLegacyMetricName(node.name);
+
   return (
     <>
-      <span className="promql-metric-name">{node.name}</span>
-      {matchLabels.length > 0 && (
+      {!nameInBraces && <span className="promql-metric-name">{node.name}</span>}
+      {(matchLabels.length > 0 || nameInBraces) && (
         <>
           {'{'}
+          {nameInBraces && (
+            <>
+              <span className="promql-metric-name">"{escapeString(node.name)}"</span>
+              {matchLabels.length > 0 && ','}
+            </>
+          )}
           <span className="promql-metric-name">{matchLabels}</span>
           {'}'}
         </>
       )}
-      {node.type === nodeType.matrixSelector && (
+      {node.type === nodeType.matrixSelector && <>[{formatDurationSpan(node.range, node.rangeExpr)}]</>}
+      {node.anchored && (
         <>
-          [<span className="promql-duration">{formatDuration(node.range)}</span>]
+          {' '}
+          <span className="promql-keyword">anchored</span>
         </>
       )}
-      {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}
+      {node.smoothed && (
+        <>
+          {' '}
+          <span className="promql-keyword">smoothed</span>
+        </>
+      )}
+      {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}
     </>
   );
 };
@@ -116,9 +148,13 @@ const formatNodeInternal = (node: ASTNode, showChildren: boolean, maxDepth?: num
       return (
         <>
           {showChildren && formatNode(node.expr, showChildren, childMaxDepth)}[
-          <span className="promql-duration">{formatDuration(node.range)}</span>:
-          {node.step !== 0 && <span className="promql-duration">{formatDuration(node.step)}</span>}]
-          {formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}
+          {formatDurationSpan(node.range, node.rangeExpr)}:
+          {node.stepExpr != null ? (
+            <span className="promql-duration">{node.stepExpr}</span>
+          ) : (
+            node.step !== 0 && <span className="promql-duration">{formatDuration(node.step)}</span>
+          )}
+          ]{formatAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}
         </>
       );
     case nodeType.parenExpr:
@@ -172,42 +208,82 @@ const formatNodeInternal = (node: ASTNode, showChildren: boolean, maxDepth?: num
     case nodeType.binaryExpr:
       let matching = <></>;
       let grouping = <></>;
+      let fill = <></>;
       const vm = node.matching;
-      if (vm !== null && (vm.labels.length > 0 || vm.on)) {
-        if (vm.on) {
-          matching = (
-            <>
-              {' '}
-              <span className="promql-keyword">on</span>
-              <span className="promql-paren">(</span>
-              {labelNameList(vm.labels)}
-              <span className="promql-paren">)</span>
-            </>
-          );
-        } else {
-          matching = (
-            <>
-              {' '}
-              <span className="promql-keyword">ignoring</span>
-              <span className="promql-paren">(</span>
-              {labelNameList(vm.labels)}
-              <span className="promql-paren">)</span>
-            </>
-          );
+      if (vm !== null) {
+        if (vm.labels.length > 0 || vm.on) {
+          if (vm.on) {
+            matching = (
+              <>
+                {' '}
+                <span className="promql-keyword">on</span>
+                <span className="promql-paren">(</span>
+                {labelNameList(vm.labels)}
+                <span className="promql-paren">)</span>
+              </>
+            );
+          } else {
+            matching = (
+              <>
+                {' '}
+                <span className="promql-keyword">ignoring</span>
+                <span className="promql-paren">(</span>
+                {labelNameList(vm.labels)}
+                <span className="promql-paren">)</span>
+              </>
+            );
+          }
+
+          if (vm.card === vectorMatchCardinality.manyToOne || vm.card === vectorMatchCardinality.oneToMany) {
+            grouping = (
+              <>
+                <span className="promql-keyword">
+                  {' '}
+                  group_{vm.card === vectorMatchCardinality.manyToOne ? 'left' : 'right'}
+                </span>
+                <span className="promql-paren">(</span>
+                {labelNameList(vm.include)}
+                <span className="promql-paren">)</span>
+              </>
+            );
+          }
         }
 
-        if (vm.card === vectorMatchCardinality.manyToOne || vm.card === vectorMatchCardinality.oneToMany) {
-          grouping = (
-            <>
-              <span className="promql-keyword">
+        if (vm.fillLHS !== undefined || vm.fillRHS !== undefined) {
+          if (vm.fillLHS !== undefined && vm.fillRHS !== undefined && vm.fillLHS === vm.fillRHS) {
+            fill = (
+              <>
                 {' '}
-                group_{vm.card === vectorMatchCardinality.manyToOne ? 'left' : 'right'}
-              </span>
-              <span className="promql-paren">(</span>
-              {labelNameList(vm.include)}
-              <span className="promql-paren">)</span>
-            </>
-          );
+                <span className="promql-keyword">fill</span>
+                <span className="promql-paren">(</span>
+                <span className="promql-number">{vm.fillLHS}</span>
+                <span className="promql-paren">)</span>
+              </>
+            );
+          } else {
+            fill = (
+              <>
+                {vm.fillLHS !== undefined && (
+                  <>
+                    {' '}
+                    <span className="promql-keyword">fill_left</span>
+                    <span className="promql-paren">(</span>
+                    <span className="promql-number">{vm.fillLHS}</span>
+                    <span className="promql-paren">)</span>
+                  </>
+                )}
+                {vm.fillRHS !== undefined && (
+                  <>
+                    {' '}
+                    <span className="promql-keyword">fill_right</span>
+                    <span className="promql-paren">(</span>
+                    <span className="promql-number">{vm.fillRHS}</span>
+                    <span className="promql-paren">)</span>
+                  </>
+                )}
+              </>
+            );
+          }
         }
       }
 
@@ -226,8 +302,8 @@ const formatNodeInternal = (node: ASTNode, showChildren: boolean, maxDepth?: num
             </>
           )}
           {matching}
-          {grouping}{' '}
-          {showChildren && formatNode(maybeParenthesizeBinopChild(node.op, node.rhs), showChildren, childMaxDepth)}
+          {grouping}
+          {fill} {showChildren && formatNode(maybeParenthesizeBinopChild(node.op, node.rhs), showChildren, childMaxDepth)}
         </>
       );
     case nodeType.placeholder:

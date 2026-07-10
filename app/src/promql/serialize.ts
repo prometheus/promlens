@@ -7,23 +7,49 @@ import ASTNode, {
   MatrixSelector,
   LabelMatcher,
 } from './ast';
-import { formatDuration } from '../utils/utils';
-import { aggregatorsWithParam, maybeParenthesizeBinopChild, escapeString } from './utils';
+import { formatDuration, formatDurationOrExpr } from '../utils/utils';
+import {
+  aggregatorsWithParam,
+  maybeParenthesizeBinopChild,
+  escapeString,
+  isLegacyMetricName,
+  maybeQuoteLabelName,
+} from './utils';
 
-const serializeAtAndOffset = (timestamp: number | null, startOrEnd: StartOrEnd, offset: number): string =>
+const serializeAtAndOffset = (
+  timestamp: number | null,
+  startOrEnd: StartOrEnd,
+  offset: number,
+  offsetExpr: string | null
+): string =>
   `${timestamp !== null ? ` @ ${(timestamp / 1000).toFixed(3)}` : startOrEnd !== null ? ` @ ${startOrEnd}()` : ''}${
-    offset === 0 ? '' : offset > 0 ? ` offset ${formatDuration(offset)}` : ` offset -${formatDuration(-offset)}`
+    offsetExpr != null
+      ? ` offset ${offsetExpr}`
+      : offset === 0
+      ? ''
+      : offset > 0
+      ? ` offset ${formatDuration(offset)}`
+      : ` offset -${formatDuration(-offset)}`
   }`;
 
 const serializeSelector = (node: VectorSelector | MatrixSelector): string => {
   const matchers = node.matchers
     .filter((m) => !(m.name === '__name__' && m.type === matchType.equal && m.value === node.name))
-    .map((m) => `${m.name}${m.type}"${escapeString(m.value)}"`);
+    .map((m) => `${maybeQuoteLabelName(m.name)}${m.type}"${escapeString(m.value)}"`);
 
-  const range = node.type === nodeType.matrixSelector ? `[${formatDuration(node.range)}]` : '';
-  const atAndOffset = serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset);
+  // A metric name that is not legacy-valid cannot be printed as a prefix and has
+  // to go into the braces as a leading quoted string instead.
+  let name = node.name;
+  if (node.name !== '' && !isLegacyMetricName(node.name)) {
+    matchers.unshift(`"${escapeString(node.name)}"`);
+    name = '';
+  }
 
-  return `${node.name}${matchers.length > 0 ? `{${matchers.join(',')}}` : ''}${range}${atAndOffset}`;
+  const range = node.type === nodeType.matrixSelector ? `[${formatDurationOrExpr(node.range, node.rangeExpr)}]` : '';
+  const extendedAttribute = node.anchored ? ' anchored' : node.smoothed ? ' smoothed' : '';
+  const atAndOffset = serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr);
+
+  return `${name}${matchers.length > 0 ? `{${matchers.join(',')}}` : ''}${range}${extendedAttribute}${atAndOffset}`;
 };
 
 const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent = true): string => {
@@ -38,9 +64,9 @@ const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent 
     case nodeType.aggregation:
       return `${initialInd}${node.op}${
         node.without
-          ? ` without(${node.grouping.join(', ')}) `
+          ? ` without(${node.grouping.map(maybeQuoteLabelName).join(', ')}) `
           : node.grouping.length > 0
-          ? ` by(${node.grouping.join(', ')}) `
+          ? ` by(${node.grouping.map(maybeQuoteLabelName).join(', ')}) `
           : ''
       }(${childListSeparator}${
         aggregatorsWithParam.includes(node.op) && node.param !== null
@@ -49,9 +75,9 @@ const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent 
       }${serializeNode(node.expr, childIndent, pretty)}${childListSeparator}${ind})`;
 
     case nodeType.subquery:
-      return `${initialInd}${serializeNode(node.expr, indent, pretty)}[${formatDuration(node.range)}:${
-        node.step !== 0 ? formatDuration(node.step) : ''
-      }]${serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset)}`;
+      return `${initialInd}${serializeNode(node.expr, indent, pretty)}[${formatDurationOrExpr(node.range, node.rangeExpr)}:${
+        node.stepExpr != null ? node.stepExpr : node.step !== 0 ? formatDuration(node.step) : ''
+      }]${serializeAtAndOffset(node.timestamp, node.startOrEnd, node.offset, node.offsetExpr)}`;
 
     case nodeType.parenExpr:
       return `${initialInd}(${childListSeparator}${serializeNode(
@@ -85,22 +111,40 @@ const serializeNode = (node: ASTNode, indent = 0, pretty = false, initialIndent 
     case nodeType.binaryExpr:
       let matching = '';
       let grouping = '';
+      let fill = '';
       const vm = node.matching;
-      if (vm !== null && (vm.labels.length > 0 || vm.on)) {
-        if (vm.on) {
-          matching = ` on(${vm.labels.join(', ')})`;
-        } else {
-          matching = ` ignoring(${vm.labels.join(', ')})`;
+      if (vm !== null) {
+        if (vm.labels.length > 0 || vm.on) {
+          if (vm.on) {
+            matching = ` on(${vm.labels.map(maybeQuoteLabelName).join(', ')})`;
+          } else {
+            matching = ` ignoring(${vm.labels.map(maybeQuoteLabelName).join(', ')})`;
+          }
+
+          if (vm.card === vectorMatchCardinality.manyToOne || vm.card === vectorMatchCardinality.oneToMany) {
+            grouping = ` group_${vm.card === vectorMatchCardinality.manyToOne ? 'left' : 'right'}(${vm.include
+              .map(maybeQuoteLabelName)
+              .join(', ')})`;
+          }
         }
 
-        if (vm.card === vectorMatchCardinality.manyToOne || vm.card === vectorMatchCardinality.oneToMany) {
-          grouping = ` group_${vm.card === vectorMatchCardinality.manyToOne ? 'left' : 'right'}(${vm.include.join(',')})`;
+        if (vm.fillLHS !== undefined || vm.fillRHS !== undefined) {
+          if (vm.fillLHS !== undefined && vm.fillRHS !== undefined && vm.fillLHS === vm.fillRHS) {
+            fill = ` fill(${vm.fillLHS})`;
+          } else {
+            if (vm.fillLHS !== undefined) {
+              fill += ` fill_left(${vm.fillLHS})`;
+            }
+            if (vm.fillRHS !== undefined) {
+              fill += ` fill_right(${vm.fillRHS})`;
+            }
+          }
         }
       }
 
       return `${serializeNode(maybeParenthesizeBinopChild(node.op, node.lhs), childIndent, pretty)}${childSeparator}${ind}${
         node.op
-      }${node.bool ? ' bool' : ''}${matching}${grouping}${childSeparator}${serializeNode(
+      }${node.bool ? ' bool' : ''}${matching}${grouping}${fill}${childSeparator}${serializeNode(
         maybeParenthesizeBinopChild(node.op, node.rhs),
         childIndent,
         pretty

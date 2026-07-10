@@ -25,6 +25,8 @@ export enum aggregationType {
   bottomk = 'bottomk',
   topk = 'topk',
   quantile = 'quantile',
+  limitk = 'limitk',
+  limitRatio = 'limit_ratio',
 }
 
 export enum binaryOperatorType {
@@ -94,6 +96,7 @@ export interface Func {
   argTypes: valueType[];
   variadic: number;
   returnType: valueType;
+  experimental?: boolean;
 }
 
 export interface LabelMatcher {
@@ -107,6 +110,10 @@ export interface VectorMatching {
   labels: string[];
   on: boolean;
   include: string[];
+  // Fill values are strings so that Inf/NaN survive JSON transport and print
+  // as valid PromQL tokens.
+  fillLHS?: string;
+  fillRHS?: string;
 }
 
 export type StartOrEnd = 'start' | 'end' | null;
@@ -142,17 +149,27 @@ export interface MatrixSelector {
   name: string;
   matchers: LabelMatcher[];
   range: number;
+  // rangeExpr is the string form of an experimental duration expression
+  // (e.g. "5m * 2" or "step()"). When set, it takes precedence over 'range'.
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  // Experimental extended range selector modifiers.
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Subquery {
   type: nodeType.subquery;
   expr: ASTNode;
   range: number;
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   step: number;
+  stepExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
 }
@@ -183,8 +200,12 @@ export interface VectorSelector {
   name: string;
   matchers: LabelMatcher[];
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  // Experimental extended range selector modifiers.
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Placeholder {

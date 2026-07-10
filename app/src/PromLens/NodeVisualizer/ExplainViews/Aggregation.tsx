@@ -39,6 +39,10 @@ const describeAggregationType = (aggrType: aggregationType, param: ASTNode | nul
       return 'returns the bottom K series by value';
     case 'topk':
       return 'returns the top K series by value';
+    case 'limitk':
+      return 'limits the output to K series, deterministically sampled';
+    case 'limit_ratio':
+      return 'deterministically samples a ratio R of the input series (the absolute value of R is used as the selection ratio, but the selection order is inverted for a negative R, so e.g. limit_ratio(-0.9, ...) returns the series not returned by limit_ratio(0.1, ...))';
     case 'quantile':
       if (param === null) {
         throw new Error('encountered quantile() node without quantile parameter');
@@ -50,7 +54,7 @@ const describeAggregationType = (aggrType: aggregationType, param: ASTNode | nul
       }
       return 'calculates a quantile over the sample values of the input series';
     default:
-      throw new Error(`invalid aggregation type ${aggrType}`);
+      return `applies the ${aggrType} aggregation to the sample values of the input series`;
   }
 };
 

@@ -338,6 +338,9 @@ export const computeVectorVectorBinOp = (
     // Calculate the results for this match group.
     mg.rhs.forEach((rs) => {
       mg.lhs.forEach((ls, lIdx) => {
+        if (ls.value === undefined || rs.value === undefined) {
+          return;
+        }
         const [vl, vr] =
           matching.card !== vectorMatchCardinality.oneToMany ? [ls.value[1], rs.value[1]] : [rs.value[1], ls.value[1]];
         let { value, keep } = vectorElemBinop(op, parsePrometheusFloat(vl), parsePrometheusFloat(vr));

@@ -1,6 +1,6 @@
 import React, { FC, ReactNode } from 'react';
 import { VectorSelector, MatrixSelector, nodeType, LabelMatcher, matchType } from '../../../promql/ast';
-import { formatDuration } from '../../../utils/utils';
+import { formatDuration, formatDurationOrExpr } from '../../../utils/utils';
 import { Alert } from 'react-bootstrap';
 import { escapeString } from '../../../promql/utils';
 import { PromAPI } from '../../../promAPI/promAPI';
@@ -73,7 +73,7 @@ export const matchingCriteriaList = (name: string, matchers: LabelMatcher[]): Re
 
 const SelectorExplainView: FC<SelectorExplainViewProps> = ({ node, promAPI }) => {
   const baseMetricName = node.name.replace(/(_count|_sum|_bucket)$/, '');
-  const metricMeta = promAPI.useFetchAPI<MetricMetadata>(`/api/v1/metadata?metric=${baseMetricName}`);
+  const metricMeta = promAPI.useFetchAPI<MetricMetadata>(`/api/v1/metadata?metric=${encodeURIComponent(baseMetricName)}`);
 
   return (
     <Alert variant="secondary">
@@ -103,8 +103,9 @@ const SelectorExplainView: FC<SelectorExplainViewProps> = ({ node, promAPI }) =>
           </>
         ) : (
           <>
-            This node selects <span className="promql-code promql-duration">{formatDuration(node.range)}</span> of data going
-            backward from the evaluation timestamp
+            This node selects{' '}
+            <span className="promql-code promql-duration">{formatDurationOrExpr(node.range, node.rangeExpr)}</span> of data
+            going backward from the evaluation timestamp
           </>
         )}
         {node.timestamp !== null ? (
@@ -117,7 +118,11 @@ const SelectorExplainView: FC<SelectorExplainViewProps> = ({ node, promAPI }) =>
         ) : (
           <></>
         )}
-        {node.offset === 0 ? (
+        {node.offsetExpr != null ? (
+          <>
+            , time-shifted by <span className="promql-code promql-duration">{node.offsetExpr}</span>,
+          </>
+        ) : node.offset === 0 ? (
           <></>
         ) : node.offset > 0 ? (
           <>
@@ -132,10 +137,24 @@ const SelectorExplainView: FC<SelectorExplainViewProps> = ({ node, promAPI }) =>
         for any series that match all of the following criteria:
       </p>
       {matchingCriteriaList(node.name, node.matchers)}
+      {node.anchored && (
+        <p>
+          The selection is <span className="promql-code promql-keyword">anchored</span>: the samples at the range boundaries
+          are used directly, without extrapolation. This is experimental and requires the connected Prometheus server to be
+          started with <span className="promql-code">--enable-feature=promql-extended-range-selectors</span>.
+        </p>
+      )}
+      {node.smoothed && (
+        <p>
+          The selection is <span className="promql-code promql-keyword">smoothed</span>: values at the range boundaries are
+          linearly interpolated from the samples around them. This is experimental and requires the connected Prometheus
+          server to be started with <span className="promql-code">--enable-feature=promql-extended-range-selectors</span>.
+        </p>
+      )}
       <p>
         If a series has no values in the last{' '}
         <span className="promql-code promql-duration">
-          {node.type === nodeType.vectorSelector ? '5m' : formatDuration(node.range)}
+          {node.type === nodeType.vectorSelector ? '5m' : formatDurationOrExpr(node.range, node.rangeExpr)}
         </span>
         {node.offset > 0 && (
           <>

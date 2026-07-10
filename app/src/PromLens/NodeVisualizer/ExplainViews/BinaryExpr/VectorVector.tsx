@@ -373,7 +373,7 @@ const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewPro
                                       format={true}
                                     />
                                   </td>
-                                  {showSampleValues && <td className="number-cell">{s.value[1]}</td>}
+                                  {showSampleValues && <td className="number-cell">{s.value?.[1]}</td>}
                                 </tr>
                               );
                             })}
@@ -412,7 +412,7 @@ const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewPro
                         ) : (
                           <>
                             {result.map(({ sample, manySideIdx }, resIdx) => {
-                              const filtered = sample.value[1] === filteredSampleValue;
+                              const filtered = sample.value?.[1] === filteredSampleValue;
                               const [lIdx, rIdx] =
                                 matching.card === vectorMatchCardinality.oneToMany ? [0, manySideIdx] : [manySideIdx, 0];
 
@@ -443,7 +443,7 @@ const VectorVectorBinaryExprExplainView: FC<VectorVectorBinaryExprExplainViewPro
                                       {filtered ? (
                                         <span style={{ color: 'grey' }}>filtered</span>
                                       ) : (
-                                        <span>{sample.value[1]}</span>
+                                        <span>{sample.value?.[1]}</span>
                                       )}
                                     </td>
                                   )}

@@ -146,9 +146,12 @@ export const childDescription = (node: ASTNode, idx: number): string => {
         switch (node.op) {
           case 'topk':
           case 'bottomk':
+          case 'limitk':
             return 'k';
           case 'quantile':
             return 'quantile';
+          case 'limit_ratio':
+            return 'ratio';
           case 'count_values':
             return 'target label name';
         }
@@ -176,7 +179,7 @@ export const childDescription = (node: ASTNode, idx: number): string => {
   }
 };
 
-export const aggregatorsWithParam = ['topk', 'bottomk', 'quantile', 'count_values'];
+export const aggregatorsWithParam = ['topk', 'bottomk', 'quantile', 'count_values', 'limitk', 'limit_ratio'];
 
 export const anyValueType = [valueType.scalar, valueType.string, valueType.matrix, valueType.vector];
 
@@ -233,6 +236,72 @@ export const humanizedValueType: Record<valueType, string> = {
   [valueType.matrix]: 'range vector',
 };
 
+// isPrintableRune approximates Go's unicode.IsPrint: letters, marks, numbers,
+// punctuation, symbols and the ASCII space are printable.
+const isPrintableRune = (ch: string): boolean => ch === ' ' || /[\p{L}\p{M}\p{N}\p{P}\p{S}]/u.test(ch);
+
+// escapeString approximates the escaping of Go's strconv.Quote (without the
+// surrounding quotes): control characters get their named or \xXX escapes, other
+// non-printable runes are escaped as \uXXXX / \UXXXXXXXX, printable runes are
+// kept literal.
 export const escapeString = (str: string) => {
-  return str.replace(/([\\"])/g, '\\$1');
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const code = str.codePointAt(i) as number;
+    if (code > 0xffff) {
+      i++;
+    }
+    switch (String.fromCodePoint(code)) {
+      case '\\':
+        result += '\\\\';
+        break;
+      case '"':
+        result += '\\"';
+        break;
+      case '\x07':
+        result += '\\a';
+        break;
+      case '\b':
+        result += '\\b';
+        break;
+      case '\f':
+        result += '\\f';
+        break;
+      case '\n':
+        result += '\\n';
+        break;
+      case '\r':
+        result += '\\r';
+        break;
+      case '\t':
+        result += '\\t';
+        break;
+      case '\v':
+        result += '\\v';
+        break;
+      default:
+        if (code < 0x20 || code === 0x7f) {
+          result += '\\x' + code.toString(16).padStart(2, '0');
+        } else if (!isPrintableRune(String.fromCodePoint(code))) {
+          if (code > 0xffff) {
+            result += '\\U' + code.toString(16).padStart(8, '0');
+          } else {
+            result += '\\u' + code.toString(16).padStart(4, '0');
+          }
+        } else {
+          result += String.fromCodePoint(code);
+        }
+    }
+  }
+  return result;
 };
+
+// isLegacyLabelName mirrors Prometheus' legacy label name validation: names not
+// matching this pattern have to be quoted when printed.
+export const isLegacyLabelName = (name: string): boolean => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
+
+// isLegacyMetricName mirrors Prometheus' legacy metric name validation, which
+// additionally allows colons for recording rule names.
+export const isLegacyMetricName = (name: string): boolean => /^[a-zA-Z_:][a-zA-Z0-9_:]*$/.test(name);
+
+export const maybeQuoteLabelName = (name: string): string => (isLegacyLabelName(name) ? name : `"${escapeString(name)}"`);

@@ -37,16 +37,23 @@ export interface MatrixSelector {
   name: string;
   matchers: LabelMatcher[];
   range: number;
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Subquery {
   type: nodeType.subquery;
   range: number;
+  rangeExpr: string | null;
   offset: number;
+  offsetExpr: string | null;
   step: number;
+  stepExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
 }
@@ -75,8 +82,11 @@ export interface VectorSelector {
   name: string;
   matchers: LabelMatcher[];
   offset: number;
+  offsetExpr: string | null;
   timestamp: number | null;
   startOrEnd: StartOrEnd;
+  anchored: boolean;
+  smoothed: boolean;
 }
 
 export interface Placeholder {

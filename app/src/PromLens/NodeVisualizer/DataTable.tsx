@@ -15,7 +15,14 @@
 
 import React, { FC, ReactNode } from 'react';
 import SeriesName from '../../utils/SeriesName';
-import { InstantSample, RangeSamples, QueryResult } from '../QueryList/QueryView/QueryResultTypes';
+import {
+  InstantSample,
+  RangeSamples,
+  QueryResult,
+  SampleHistogram,
+  bucketRangeString,
+  mergeSamplePoints,
+} from '../QueryList/QueryView/QueryResultTypes';
 import ASTNode from '../../promql/ast';
 import serializeNode from '../../promql/serialize';
 import { Alert, Table } from 'react-bootstrap';
@@ -29,6 +36,54 @@ const limitSeries = <S extends InstantSample | RangeSamples>(series: S[]): S[] =
   }
   return series;
 };
+
+export const QueryAnnotations: FC<{ warnings?: string[]; infos?: string[] }> = ({ warnings, infos }) => (
+  <>
+    {warnings !== undefined &&
+      warnings.map((warning, idx) => (
+        <Alert variant="warning" key={idx}>
+          <strong>Warning:</strong> {warning}
+        </Alert>
+      ))}
+    {infos !== undefined &&
+      infos.map((info, idx) => (
+        <Alert variant="info" key={idx}>
+          <strong>Info:</strong> {info}
+        </Alert>
+      ))}
+  </>
+);
+
+const HistogramValue: FC<{ histogram: SampleHistogram }> = ({ histogram }) => (
+  <>
+    <div>
+      <strong>Count:</strong> {histogram.count} <strong>Sum:</strong> {histogram.sum}
+    </div>
+    {histogram.buckets !== undefined && histogram.buckets.length > 0 && (
+      <details className="histogram-buckets">
+        <summary>
+          {histogram.buckets.length} bucket{histogram.buckets.length !== 1 && 's'}
+        </summary>
+        <Table size="sm" bordered className="data-table histogram-buckets-table">
+          <thead>
+            <tr>
+              <th>Bucket range</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {histogram.buckets.map((b, idx) => (
+              <tr key={idx}>
+                <td>{bucketRangeString(b)}</td>
+                <td>{b[3]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </details>
+    )}
+  </>
+);
 
 interface DataTableProps {
   node: ASTNode;
@@ -67,8 +122,15 @@ const DataTable: FC<DataTableProps> = React.memo(({ node, evalTime, promAPI, ret
     // throw new Error('Result data is null despite no error');
   }
 
+  const annotations = <QueryAnnotations warnings={query.warnings} infos={query.infos} />;
+
   if (data.result === null || data.result.length === 0) {
-    return <Alert variant="secondary">Empty query result.</Alert>;
+    return (
+      <>
+        {annotations}
+        <Alert variant="secondary">Empty query result.</Alert>
+      </>
+    );
   }
 
   let rows: ReactNode[] = [];
@@ -83,7 +145,10 @@ const DataTable: FC<DataTableProps> = React.memo(({ node, evalTime, promAPI, ret
             <td>
               <SeriesName labels={s.metric} format={doFormat} />
             </td>
-            <td>{s.value[1]}</td>
+            <td>
+              {s.value !== undefined && s.value[1]}
+              {s.histogram !== undefined && <HistogramValue histogram={s.histogram[1]} />}
+            </td>
           </tr>
         );
       });
@@ -91,9 +156,10 @@ const DataTable: FC<DataTableProps> = React.memo(({ node, evalTime, promAPI, ret
       break;
     case 'matrix':
       rows = (limitSeries(data.result) as RangeSamples[]).map((s, index) => {
-        const valueText = s.values
-          .map((v) => {
-            return v[1] + ' @' + v[0];
+        const valueText = mergeSamplePoints(s.values, s.histograms)
+          .map((p) => {
+            const value = p.histogram !== undefined ? `Count: ${p.histogram.count} Sum: ${p.histogram.sum}` : p.value;
+            return value + ' @' + p.timestamp;
           })
           .join('\n');
         return (
@@ -129,6 +195,7 @@ const DataTable: FC<DataTableProps> = React.memo(({ node, evalTime, promAPI, ret
 
   return (
     <>
+      {annotations}
       {limited && (
         <Alert variant="danger">
           <strong>Warning:</strong> Fetched {data.result.length} series, only displaying first {rows.length}.

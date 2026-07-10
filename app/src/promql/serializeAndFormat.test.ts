@@ -18,9 +18,12 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           offset: 0,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -29,6 +32,8 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [
             { type: matchType.equal, name: 'label1', value: 'value1' },
@@ -37,6 +42,7 @@ describe('serializeNode and formatNode', () => {
             { type: matchType.matchNotRegexp, name: 'label4', value: 'value4' },
           ],
           offset: 0,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -45,9 +51,12 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           offset: 60000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -56,9 +65,67 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: true,
+          smoothed: false,
+          name: 'metric_name',
+          matchers: [],
+          offset: 0,
+          offsetExpr: '5m * 2',
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: 'metric_name anchored offset 5m * 2',
+      },
+      {
+        node: {
+          type: nodeType.matrixSelector,
+          anchored: false,
+          smoothed: true,
+          name: 'metric_name',
+          matchers: [],
+          range: 0,
+          rangeExpr: 'step() * 4',
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: 'metric_name[step() * 4] smoothed',
+      },
+      {
+        node: {
+          type: nodeType.subquery,
+          expr: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'metric_name',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          range: 0,
+          rangeExpr: 'max_of(1h, range())',
+          step: 0,
+          stepExpr: 'step() / 2',
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: 'metric_name[max_of(1h, range()):step() / 2]',
+      },
+      {
+        node: {
+          type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           offset: -60000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: 'start',
         },
@@ -67,9 +134,12 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           offset: -60000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: 'end',
         },
@@ -78,9 +148,12 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           offset: -60000,
+          offsetExpr: null,
           timestamp: 123000,
           startOrEnd: null,
         },
@@ -89,9 +162,12 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: '',
           matchers: [{ type: matchType.equal, name: '__name__', value: 'metric_name' }],
           offset: 60000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -101,9 +177,12 @@ describe('serializeNode and formatNode', () => {
         // Escaping in label values.
         node: {
           type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [{ type: matchType.equal, name: 'label1', value: '"""' }],
           offset: 0,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -114,6 +193,8 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.matrixSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [
             { type: matchType.equal, name: 'label1', value: 'value1' },
@@ -122,7 +203,9 @@ describe('serializeNode and formatNode', () => {
             { type: matchType.matchNotRegexp, name: 'label4', value: 'value4' },
           ],
           range: 300000,
+          rangeExpr: null,
           offset: 600000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -131,10 +214,14 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.matrixSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           range: 300000,
+          rangeExpr: null,
           offset: -600000,
+          offsetExpr: null,
           timestamp: 123000,
           startOrEnd: null,
         },
@@ -143,10 +230,14 @@ describe('serializeNode and formatNode', () => {
       {
         node: {
           type: nodeType.matrixSelector,
+          anchored: false,
+          smoothed: false,
           name: 'metric_name',
           matchers: [],
           range: 300000,
+          rangeExpr: null,
           offset: -600000,
+          offsetExpr: null,
           timestamp: null,
           startOrEnd: 'start',
         },
@@ -232,8 +323,11 @@ describe('serializeNode and formatNode', () => {
           type: nodeType.subquery,
           expr: { type: nodeType.placeholder, children: [] },
           range: 300000,
+          rangeExpr: null,
           offset: 0,
+          offsetExpr: null,
           step: 0,
+          stepExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -244,8 +338,11 @@ describe('serializeNode and formatNode', () => {
           type: nodeType.subquery,
           expr: { type: nodeType.placeholder, children: [] },
           range: 300000,
+          rangeExpr: null,
           offset: 600000,
+          offsetExpr: null,
           step: 60000,
+          stepExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -256,8 +353,11 @@ describe('serializeNode and formatNode', () => {
           type: nodeType.subquery,
           expr: { type: nodeType.placeholder, children: [] },
           range: 300000,
+          rangeExpr: null,
           offset: -600000,
+          offsetExpr: null,
           step: 60000,
+          stepExpr: null,
           timestamp: 123000,
           startOrEnd: null,
         },
@@ -268,8 +368,11 @@ describe('serializeNode and formatNode', () => {
           type: nodeType.subquery,
           expr: { type: nodeType.placeholder, children: [] },
           range: 300000,
+          rangeExpr: null,
           offset: -600000,
+          offsetExpr: null,
           step: 60000,
+          stepExpr: null,
           timestamp: null,
           startOrEnd: 'end',
         },
@@ -284,18 +387,25 @@ describe('serializeNode and formatNode', () => {
             args: [
               {
                 type: nodeType.matrixSelector,
+                anchored: false,
+                smoothed: false,
                 range: 600000,
+                rangeExpr: null,
                 name: 'metric_name',
                 matchers: [],
                 offset: 0,
+                offsetExpr: null,
                 timestamp: null,
                 startOrEnd: null,
               },
             ],
           },
           range: 300000,
+          rangeExpr: null,
           offset: 0,
+          offsetExpr: null,
           step: 0,
+          stepExpr: null,
           timestamp: null,
           startOrEnd: null,
         },
@@ -585,6 +695,283 @@ describe('serializeNode and formatNode', () => {
         prettyOutput: `  …
 == bool on(label1, label2) group_right(label3)
   …`,
+      },
+
+      // limitk / limit_ratio aggregations.
+      {
+        node: {
+          type: nodeType.aggregation,
+          expr: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          op: aggregationType.limitk,
+          param: { type: nodeType.numberLiteral, val: '5' },
+          grouping: [],
+          without: false,
+        },
+        output: 'limitk(5, foo)',
+        prettyOutput: `limitk(
+  5,
+  foo
+)`,
+      },
+      {
+        node: {
+          type: nodeType.aggregation,
+          expr: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          op: aggregationType.limitRatio,
+          param: { type: nodeType.numberLiteral, val: '0.5' },
+          grouping: [],
+          without: false,
+        },
+        output: 'limit_ratio(0.5, foo)',
+        prettyOutput: `limit_ratio(
+  0.5,
+  foo
+)`,
+      },
+
+      // Fill modifiers on binary expressions.
+      {
+        node: {
+          type: nodeType.binaryExpr,
+          op: binaryOperatorType.div,
+          lhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          rhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'bar',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          matching: { card: vectorMatchCardinality.oneToOne, labels: [], on: false, include: [], fillLHS: '0', fillRHS: '0' },
+          bool: false,
+        },
+        output: 'foo / fill(0) bar',
+        prettyOutput: `  foo
+/ fill(0)
+  bar`,
+      },
+      {
+        node: {
+          type: nodeType.binaryExpr,
+          op: binaryOperatorType.div,
+          lhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          rhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'bar',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          matching: { card: vectorMatchCardinality.oneToOne, labels: ['job'], on: true, include: [], fillLHS: '1' },
+          bool: false,
+        },
+        output: 'foo / on(job) fill_left(1) bar',
+        prettyOutput: `  foo
+/ on(job) fill_left(1)
+  bar`,
+      },
+      {
+        node: {
+          type: nodeType.binaryExpr,
+          op: binaryOperatorType.div,
+          lhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          rhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'bar',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          matching: { card: vectorMatchCardinality.oneToOne, labels: [], on: false, include: [], fillLHS: '1', fillRHS: '2.5' },
+          bool: false,
+        },
+        output: 'foo / fill_left(1) fill_right(2.5) bar',
+        prettyOutput: `  foo
+/ fill_left(1) fill_right(2.5)
+  bar`,
+      },
+      {
+        node: {
+          type: nodeType.binaryExpr,
+          op: binaryOperatorType.div,
+          lhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'foo',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          rhs: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'bar',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          matching: { card: vectorMatchCardinality.oneToOne, labels: [], on: false, include: [], fillLHS: '+Inf', fillRHS: '+Inf' },
+          bool: false,
+        },
+        output: 'foo / fill(+Inf) bar',
+        prettyOutput: `  foo
+/ fill(+Inf)
+  bar`,
+      },
+
+      // UTF-8 metric and label names.
+      {
+        node: {
+          type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
+          name: 'metric.name',
+          matchers: [
+            { type: matchType.equal, name: '__name__', value: 'metric.name' },
+            { type: matchType.equal, name: 'label.name', value: 'x' },
+          ],
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: '{"metric.name","label.name"="x"}',
+      },
+      {
+        node: {
+          type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
+          name: 'metric.name',
+          matchers: [],
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: '{"metric.name"}',
+      },
+      {
+        node: {
+          type: nodeType.vectorSelector,
+          anchored: false,
+          smoothed: false,
+          name: 'job:foo:rate5m',
+          matchers: [],
+          offset: 0,
+          offsetExpr: null,
+          timestamp: null,
+          startOrEnd: null,
+        },
+        output: 'job:foo:rate5m',
+      },
+      {
+        node: {
+          type: nodeType.aggregation,
+          expr: {
+            type: nodeType.vectorSelector,
+            anchored: false,
+            smoothed: false,
+            name: 'x',
+            matchers: [],
+            offset: 0,
+            offsetExpr: null,
+            timestamp: null,
+            startOrEnd: null,
+          },
+          op: aggregationType.sum,
+          param: null,
+          grouping: ['label.name'],
+          without: false,
+        },
+        output: 'sum by("label.name") (x)',
+        prettyOutput: `sum by("label.name") (
+  x
+)`,
+      },
+
+      // String literals with control characters.
+      {
+        node: {
+          type: nodeType.stringLiteral,
+          val: 'a\nb\tc\rd',
+        },
+        output: '"a\\nb\\tc\\rd"',
+      },
+      {
+        node: {
+          type: nodeType.stringLiteral,
+          val: 'ctrl \x01 and del \x7f',
+        },
+        output: '"ctrl \\x01 and del \\x7f"',
       },
     ];
 

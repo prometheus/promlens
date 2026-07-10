@@ -26,10 +26,15 @@ import (
 	"github.com/russross/blackfriday/v2"
 )
 
-var funcDocsRe = regexp.MustCompile("^## `(.+)\\(\\)`\n$|^## (Trigonometric Functions)\n$")
+// funcDocsRe matches function headings, including combined ones like
+// "## `histogram_count()` and `histogram_sum()`".
+var funcDocsRe = regexp.MustCompile("^## (`.+\\(\\)`.*|Trigonometric Functions)\n$")
+
+// funcNameRe extracts the individual function names from a heading.
+var funcNameRe = regexp.MustCompile("`(<aggregation>_over_time|[a-zA-Z0-9_]+)\\(\\)`")
 
 func main() {
-	resp, err := http.Get("https://raw.githubusercontent.com/prometheus/prometheus/master/docs/querying/functions.md")
+	resp, err := http.Get("https://raw.githubusercontent.com/prometheus/prometheus/main/docs/querying/functions.md")
 	if err != nil {
 		log.Fatalln("Failed to fetch function docs:", err)
 	}
@@ -40,28 +45,19 @@ func main() {
 	funcDocs := map[string]string{}
 
 	r := bufio.NewReader(resp.Body)
-	currentFunc := ""
+	var currentFuncs []string
 	currentDocs := ""
 
 	saveCurrent := func() {
-		switch currentFunc {
-		case "<aggregation>_over_time":
-			for _, fn := range []string{
-				"avg_over_time",
-				"min_over_time",
-				"max_over_time",
-				"sum_over_time",
-				"count_over_time",
-				"quantile_over_time",
-				"stddev_over_time",
-				"stdvar_over_time",
-				"last_over_time",
-				"present_over_time",
-			} {
-				funcDocs[fn] = currentDocs
-			}
-		case "Trigonometric Functions":
-			for _, fn := range []string{
+		for _, fn := range currentFuncs {
+			funcDocs[fn] = currentDocs
+		}
+	}
+
+	// headingFuncs returns the function names documented under a heading.
+	headingFuncs := func(heading string) []string {
+		if heading == "Trigonometric Functions" {
+			return []string{
 				"acos",
 				"acosh",
 				"asin",
@@ -77,12 +73,34 @@ func main() {
 				"deg",
 				"pi",
 				"rad",
-			} {
-				funcDocs[fn] = currentDocs
 			}
-		default:
-			funcDocs[currentFunc] = currentDocs
 		}
+		var fns []string
+		for _, m := range funcNameRe.FindAllStringSubmatch(heading, -1) {
+			if m[1] == "<aggregation>_over_time" {
+				fns = append(fns,
+					"avg_over_time",
+					"min_over_time",
+					"max_over_time",
+					"sum_over_time",
+					"count_over_time",
+					"quantile_over_time",
+					"stddev_over_time",
+					"stdvar_over_time",
+					"last_over_time",
+					"present_over_time",
+					"mad_over_time",
+					"first_over_time",
+					"ts_of_min_over_time",
+					"ts_of_max_over_time",
+					"ts_of_last_over_time",
+					"ts_of_first_over_time",
+				)
+			} else {
+				fns = append(fns, m[1])
+			}
+		}
+		return fns
 	}
 
 	for {
@@ -97,16 +115,9 @@ func main() {
 
 		matches := funcDocsRe.FindStringSubmatch(line)
 		if len(matches) > 0 {
-			if currentFunc != "" {
-				saveCurrent()
-			}
+			saveCurrent()
 			currentDocs = ""
-
-			currentFunc = string(matches[1])
-			if matches[2] != "" {
-				// This is the case for "## Trigonometric Functions"
-				currentFunc = matches[2]
-			}
+			currentFuncs = headingFuncs(matches[1])
 		} else {
 			currentDocs += line
 		}

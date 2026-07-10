@@ -95,7 +95,11 @@ const getNodeAnnotations = (
         args: [
           {
             ...node,
-            ...(node.type === nodeType.vectorSelector && { type: nodeType.matrixSelector, range: 5 * 60 * 1000 }),
+            ...(node.type === nodeType.vectorSelector && {
+              type: nodeType.matrixSelector,
+              range: 5 * 60 * 1000,
+              rangeExpr: null,
+            }),
           } as ASTNode, // Required because of https://devblogs.microsoft.com/typescript/announcing-typescript-4-1/#conditional-spreads-create-optional-properties
         ],
       },
@@ -131,7 +135,7 @@ const getNodeAnnotations = (
             expr: {
               type: nodeType.call,
               func: functionSignatures['rate'],
-              args: [{ ...node, type: nodeType.matrixSelector, range: 5 * 60 * 1000 }],
+              args: [{ ...node, type: nodeType.matrixSelector, range: 5 * 60 * 1000, rangeExpr: null }],
             },
             without: false,
           },
